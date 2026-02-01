@@ -17435,3 +17435,23 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2026-02-01 17:50:02,078 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
 2026-02-01 17:50:02,354 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
 2026-02-01 17:50:02,357 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:50:02,595 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:50:02,596 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:50:02,652 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:50:02,658 - __main__ - INFO - [TraceID: 03b36e3e] Response: 200
+2026-02-01 17:50:02,658 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:50:02] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:50:02,896 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:50:02,899 - __main__ - INFO - [TraceID: 1e062c96] Response: 200
+2026-02-01 17:50:02,899 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:50:02] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:50:03,379 - __main__ - INFO - [TraceID: 4914d66f] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:50:03,381 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:50:03,381 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:50:03,383 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:50:03,384 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:50:03,941 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:50:03,942 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:50:04,256 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:50:04,260 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:50:04,590 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:50:04,596 - __main__ - INFO - [TraceID: 4914d66f] Response: 200
+2026-02-01 17:50:04,597 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:50:04] "GET /api/portfolio HTTP/1.1" 200 -
