@@ -16740,3 +16740,15 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2026-02-01 17:45:43,058 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
 2026-02-01 17:45:43,066 - __main__ - INFO - [TraceID: 0f37f8fc] Response: 200
 2026-02-01 17:45:43,067 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:43] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:51,011 - __main__ - INFO - [TraceID: 1c9ce5c5] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:51,018 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:51,018 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:51,020 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:51,021 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:51,528 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:51,529 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:51,841 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:51,842 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:52,129 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:52,135 - __main__ - INFO - [TraceID: 1c9ce5c5] Response: 200
+2026-02-01 17:45:52,135 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:52] "GET /api/portfolio HTTP/1.1" 200 -
