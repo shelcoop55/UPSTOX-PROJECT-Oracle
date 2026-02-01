@@ -23,3 +23,7 @@ upstox-python-sdk  # If available, otherwise use requests
 # Development
 pytest==7.4.3
 black==23.12.1
+
+# AI Assistant
+google-generativeai
+python-telegram-bot

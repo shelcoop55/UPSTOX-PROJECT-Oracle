@@ -18,6 +18,7 @@ from pathlib import Path
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from scripts.auth_manager import AuthManager
+from scripts.upstox_live_api import UpstoxLiveAPI
 
 # Configure logging
 logging.basicConfig(
@@ -219,7 +220,8 @@ class StockDownloader(BaseDownloader):
         interval: str = '1d'
     ) -> pd.DataFrame:
         """
-        Fetch stock data from Upstox API
+        Fetch stock data from Upstox API using central UpstoxLiveAPI service
+        
         Args:
             symbol: Stock symbol (e.g., 'INFY') or instrument_key
             start_date: Start date (YYYY-MM-DD)
@@ -231,11 +233,8 @@ class StockDownloader(BaseDownloader):
         logger.info(f"Fetching {symbol} from Upstox API: {start_date} to {end_date}, interval={interval}")
         
         try:
-            # Get access token
-            token = self.auth_manager.get_valid_token()
-            if not token:
-                logger.warning("No valid Upstox token - using mock data")
-                return self._generate_mock_data(symbol, start_date, end_date)
+            # Initialize API Wrapper
+            api = UpstoxLiveAPI()
             
             # Get instrument key
             instrument_key = self.get_instrument_key(symbol)
@@ -244,7 +243,7 @@ class StockDownloader(BaseDownloader):
             import urllib.parse
             instrument_key_encoded = urllib.parse.quote(instrument_key, safe='')
             
-            # Map interval to Upstox V2 format - use simple interval name
+            # Map interval to Upstox V2 format
             interval_map_v2 = {
                 '1m': '1minute',
                 '5m': '5minute',
@@ -257,32 +256,19 @@ class StockDownloader(BaseDownloader):
                 'month': 'month'
             }
             
-            if interval not in interval_map_v2:
-                raise ValueError(f"Invalid interval: {interval}. Supported: {list(interval_map_v2.keys())}")
+            if interval in interval_map_v2:
+                api_interval = interval_map_v2[interval]
+            else:
+                api_interval = interval
             
-            api_interval = interval_map_v2[interval]
-            
-            # Build API URL: /v2/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}
-            url = f"{self.base_url}/historical-candle/{instrument_key}/{api_interval}/{end_date}/{start_date}"
-            
-            headers = {
-                'Authorization': f'Bearer {token}',
-                'Accept': 'application/json'
-            }
-            
-            logger.debug(f"API URL: {url}")
-            
-            # Use shorter timeout (15s) with (connect_timeout, read_timeout)
-            response = requests.get(url, headers=headers, timeout=(5, 15))
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            if data.get('status') != 'success':
-                logger.error(f"API error: {data.get('errors', data)}")
-                return pd.DataFrame()
-            
-            candles = data.get('data', {}).get('candles', [])
+            # Use the verified backend function
+            # Endpoint: /v2/historical-candle/{instrumentKey}/{interval}/{toDate}/{fromDate}
+            candles = api.get_historical_candles(
+                instrument_key=instrument_key_encoded,
+                interval=api_interval,
+                to_date=end_date,
+                from_date=start_date
+            )
             
             if not candles:
                 logger.warning(f"No data returned for {symbol}")
@@ -293,7 +279,11 @@ class StockDownloader(BaseDownloader):
             for candle in candles:
                 timestamp_str, open_p, high, low, close, volume, oi = candle
                 # Convert ISO timestamp to datetime
-                dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                try:
+                    dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                except ValueError:
+                     # Fallback for different formats
+                    dt = datetime.now()
                 
                 records.append({
                     'datetime': dt.strftime('%Y-%m-%d %H:%M:%S'),
@@ -310,11 +300,8 @@ class StockDownloader(BaseDownloader):
             logger.info(f"Fetched {len(df)} rows for {symbol} from Upstox")
             return df
             
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching {symbol} from Upstox: {e} - using mock data")
-            return self._generate_mock_data(symbol, start_date, end_date)
         except Exception as e:
-            logger.error(f"Unexpected error: {e} - using mock data")
+            logger.error(f"Error fetching from Upstox: {e} - using mock data", exc_info=True)
             return self._generate_mock_data(symbol, start_date, end_date)
     
     def _generate_mock_data(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:

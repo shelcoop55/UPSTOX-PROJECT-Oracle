@@ -79,6 +79,31 @@ class MarketMoversService:
             elif category == 'VOLUME_SHOCKERS':
                  # All NSE Equity for Volume Shocker processing
                  query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_EQ' AND type_code IN ('EQ', 'BE')"
+            
+            # --- INDEX CATEGORIES ---
+            elif category == 'NIFTY_50':
+                query = """
+                SELECT i.instrument_key, i.symbol, i.trading_symbol 
+                FROM instruments i
+                JOIN stock_metadata m ON i.symbol = m.symbol
+                WHERE i.segment_id='NSE_EQ' AND m.is_nifty50 = 1
+                """
+                
+            elif category == 'NIFTY_500':
+                query = """
+                SELECT i.instrument_key, i.symbol, i.trading_symbol 
+                FROM instruments i
+                JOIN stock_metadata m ON i.symbol = m.symbol
+                WHERE i.segment_id='NSE_EQ' AND m.is_nifty500 = 1
+                """
+
+            elif category == 'NIFTY_BANK':
+                query = """
+                SELECT i.instrument_key, i.symbol, i.trading_symbol 
+                FROM instruments i
+                JOIN stock_metadata m ON i.symbol = m.symbol
+                WHERE i.segment_id='NSE_EQ' AND m.is_nifty_bank = 1
+                """
 
             else:
                 return []
@@ -117,6 +142,19 @@ class MarketMoversService:
         # Create mapping key -> symbol
         key_map = {row[0]: {'symbol': row[1], 'name': row[2]} for row in instruments}
         keys_to_fetch = list(key_map.keys())
+        
+        # Load Metadata for Sectors
+        # Fetch sector map: {symbol: sector}
+        sector_map = {}
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT symbol, sector FROM stock_metadata")
+            for r in cursor.fetchall():
+                 sector_map[r[0]] = r[1]
+            conn.close()
+        except:
+             pass
         
         # DEBUG: Print first 3 keys
         print(f"[Movers] First 3 keys for {category}: {keys_to_fetch[:3]}")
@@ -176,8 +214,13 @@ class MarketMoversService:
                 
             vol = q_data.get('volume', 0)
             
+            # Get Sector
+            sym_name = info.get('symbol', 'UNKNOWN')
+            sec = sector_map.get(sym_name, '-')
+
             processed_data.append({
-                'symbol': info.get('symbol', 'UNKNOWN'),
+                'symbol': sym_name,
+                'sector': sec,
                 'price': ltp,
                 'change': change,
                 'pct_change': pct_change,

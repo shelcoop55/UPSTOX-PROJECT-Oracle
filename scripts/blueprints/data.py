@@ -213,3 +213,205 @@ def downloads_page():
     except Exception as e:
         logger.error(f"[TraceID: {g.trace_id}] Downloads page error: {e}", exc_info=True)
         return jsonify({'error': 'Failed to load downloads page'}), 500
+
+# ============================================================================
+# EXPIRED OPTIONS DATA ENDPOINTS
+# ============================================================================
+
+@data_bp.route('/expired/expiries', methods=['GET'])
+def get_expired_expiries_list():
+    """
+    Get available expiry dates for an underlying symbol (Expired Options)
+    Query Params: underlying (e.g. NIFTY)
+    """
+    try:
+        from scripts.expired_options_fetcher import get_available_expiries
+        
+        underlying = request.args.get('underlying')
+        if not underlying:
+            return jsonify({'error': 'Underlying symbol required'}), 400
+            
+        logger.info(f"[TraceID: {g.trace_id}] Fetching expiries for {underlying}")
+        
+        expiries = get_available_expiries(underlying)
+        
+        return jsonify({
+            'success': True,
+            'underlying': underlying,
+            'expiries': expiries
+        })
+        
+    except Exception as e:
+        logger.error(f"[TraceID: {g.trace_id}] Fetching expiries failed: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@data_bp.route('/expired/download', methods=['POST'])
+def download_expired_data():
+    """
+    Download and store expired option chain data
+    Body: {
+        "underlying": "NIFTY",
+        "expiries": ["2025-01-22", ...],
+        "option_type": "CE" (optional),
+        "download_candles": true,
+        "interval": "30minute"
+    }
+    """
+    try:
+        from scripts.expired_options_fetcher import (
+            fetch_expired_option_contracts, 
+            fetch_expired_future_contracts,
+            parse_option_data, 
+            parse_future_data,
+            store_expired_options,
+            fetch_expired_historical_candles, 
+            store_expired_candles
+        )
+        from datetime import datetime, timedelta
+        
+        data = request.json
+        underlying = data.get('underlying')
+        expiries = data.get('expiries', [])
+        option_type = data.get('option_type') 
+        download_candles = data.get('download_candles', False)
+        fetch_futures = data.get('fetch_futures', False)
+        interval = data.get('interval', 'day')
+        
+        if not underlying or not expiries:
+            return jsonify({'error': 'Underlying and Expiries list required'}), 400
+            
+        logger.info(f"[TraceID: {g.trace_id}] Downloading expired for {underlying}, candles={download_candles}, futures={fetch_futures}")
+        
+        total_records = 0
+        total_candles = 0
+        results = []
+        
+        for expiry in expiries:
+            try:
+                # 1. Fetch Options Contracts
+                contracts = fetch_expired_option_contracts(underlying, expiry, option_type)
+                
+                # Parse & Store Options
+                parsed_opts = []
+                for c in contracts:
+                    parsed = parse_option_data(c, underlying, expiry)
+                    parsed_opts.append(parsed)
+                
+                count = store_expired_options(parsed_opts)
+                total_records += count
+                
+                # 1.1 Fetch Futures (Optional)
+                if fetch_futures:
+                    f_contracts = fetch_expired_future_contracts(underlying, expiry)
+                    parsed_futs = []
+                    for c in f_contracts:
+                        parsed = parse_future_data(c, underlying, expiry)
+                        parsed_futs.append(parsed)
+                    
+                    f_count = store_expired_options(parsed_futs)
+                    total_records += f_count
+                    # Include futures in candle download loop
+                    contracts.extend(f_contracts)
+
+                # 2. Download Candles (for Options only likely, unless we extend to futures later)
+
+                
+                # 3. Fetch Candles (if requested)
+                candles_status = "skipped"
+                candles_count = 0
+                
+                if download_candles and contracts:
+                    # Determine date range (Expiry Date back 100 days to cover contract life)
+                    # Expiry format: YYYY-MM-DD
+                    try:
+                        exp_dt = datetime.strptime(expiry, '%Y-%m-%d')
+                        to_date = expiry
+                        from_date = (exp_dt - timedelta(days=120)).strftime('%Y-%m-%d')
+                        
+                        for contract in contracts:
+                            # Construct correct instrument key: "NSE_FO|{token}|{expiry}" or similar
+                            # The API expects 'expired_instrument_key'.
+                            # Let's check what 'fetch_expired_option_contracts' returns in 'instrument_key'.
+                            # In parsed_option_data, we might have it.
+                            # Upstox expired key format: NSE_FO|Token|dd-mm-yyyy (Maybe?)
+                            # Actually, documentation says: "combination of standard instrument key and expiry date"
+                            
+                            # Let's trust the instrument_key returned by fetch_expired_option_contracts if available
+                            # Usually contract['instrument_key'] is enough? No, for expired it's special.
+                            # Docs say: NSE_FO|54452|24-04-2025
+                            
+                            i_key = contract.get('instrument_key')
+                            
+                            # If fetched, try to get candles
+                            c_data = fetch_expired_historical_candles(i_key, interval, from_date, to_date)
+                            if c_data:
+                                saved = store_expired_candles(i_key, interval, c_data)
+                                candles_count += saved
+                                
+                        candles_status = f"success ({candles_count})"
+                        total_candles += candles_count
+                        
+                    except Exception as date_e:
+                        logger.error(f"Date error for candles: {date_e}")
+                        candles_status = "date_error"
+
+                results.append({
+                    'expiry': expiry,
+                    'status': 'success',
+                    'count': count,
+                    'candles': candles_status
+                })
+                
+            except Exception as inner_e:
+                logger.error(f"Failed for expiry {expiry}: {inner_e}")
+                results.append({
+                    'expiry': expiry,
+                    'status': 'failed',
+                    'error': str(inner_e)
+                })
+        
+        return jsonify({
+            'success': True,
+            'total_records': total_records,
+            'total_candles': total_candles,
+            'results': results
+        })
+        
+    except Exception as e:
+        logger.error(f"[TraceID: {g.trace_id}] Expired download failed: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@data_bp.route('/market-quote', methods=['POST'])
+def get_market_quote():
+    """
+    Get full market quote (LTP, Depth, OHLC) for list of symbols.
+    Request body: { "symbols": ["INFY", "NHPC", "NSE_EQ|..."] }
+    """
+    try:
+        from scripts.market_quote_fetcher import MarketQuoteFetcher
+        
+        data = request.json
+        symbols = data.get('symbols', [])
+        
+        if not symbols:
+            return jsonify({'error': 'No symbols provided'}), 400
+            
+        logger.info(f"[TraceID: {g.trace_id}] Fetching market quotes for: {symbols}")
+        
+        fetcher = MarketQuoteFetcher(db_path=DB_PATH)
+        quotes = fetcher.fetch_quotes(symbols)
+        
+        if "error" in quotes:
+            return jsonify(quotes), 400
+            
+        return jsonify({
+            'status': 'success',
+            'data': quotes,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Market Quote Error: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500

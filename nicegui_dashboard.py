@@ -36,15 +36,20 @@ logging.getLogger().setLevel(logging.INFO)
 
 from dashboard_ui.state import DashboardState
 from dashboard_ui.common import Theme, Components
-from dashboard_ui.pages import home, downloads, positions, fno, guide, wip, live_data
+from dashboard_ui.pages import (
+    home, downloads, positions, fno, guide, wip, live_data, 
+    ai_chat, option_chain, option_greeks, historical_options, api_debugger
+)
 
 # Configuration
 REFRESH_INTERVAL = 30000  # 30 seconds
 
 @ui.page('/')
-def main_dashboard():
+def main_dashboard(page: str = None):
     Theme.apply()
     state = DashboardState()
+    if page:
+        state.current_page = page
 
     # --- Debug Console ---
     with ui.dialog() as debug_dialog, ui.card().classes('w-full max-w-4xl h-[80vh] bg-slate-900 border border-slate-700'):
@@ -172,13 +177,17 @@ def main_dashboard():
                     menu_item('Dashboard', 'dashboard', 'dashboard')
                     menu_item('Live Data', 'live_data', 'ssid_chart')
                     menu_item('Data Downloads', 'downloads', 'cloud_download')
+                    menu_item('Historical Options', 'historical_options', 'history')
                     
                     menu_group('Trading')
                     menu_item('Positions', 'positions', 'pie_chart')
-                    menu_item('Orders', 'orders', 'list_alt')
-                    menu_item('Options & Futures', 'fno_analysis', 'timeline')
+                    menu_item('Option Chain', 'option_chain', 'list_alt')
+                    menu_item('Option Greeks', 'option_greeks', 'data_exploration')
+                    menu_item('F&O Analysis', 'fno_analysis', 'timeline')
                     
                     menu_group('Tools')
+                    menu_item('AI Assistant', 'ai_chat', 'smart_toy')
+                    menu_item('API Debugger', 'api_debugger', 'integration_instructions')
                     menu_item('Backtest', 'backtest', 'science')
                     menu_item('Market Guide', 'market_guide', 'library_books')
                     menu_item('Configurations', 'settings', 'settings')
@@ -206,12 +215,22 @@ def main_dashboard():
         with ui.column().classes('w-full h-full max-w-7xl mx-auto animate-fade-in'):
             if state.current_page == 'dashboard':
                 home.render_page(state)
+            elif state.current_page == 'ai_chat':
+                ai_chat.render_page(state)
             elif state.current_page == 'live_data':
                 live_data.render_page(state)
             elif state.current_page == 'downloads':
                 downloads.render_page(state)
+            elif state.current_page == 'historical_options':
+                historical_options.historical_options_page()
+            elif state.current_page == 'api_debugger':
+                api_debugger.api_debugger_page()
             elif state.current_page == 'positions':
                 positions.render_page(state)
+            elif state.current_page == 'option_chain':
+                option_chain.render_page(state)
+            elif state.current_page == 'option_greeks':
+                option_greeks.render_page(state)
             elif state.current_page == 'fno_analysis':
                 fno.render_page(state)
             elif state.current_page == 'market_guide':

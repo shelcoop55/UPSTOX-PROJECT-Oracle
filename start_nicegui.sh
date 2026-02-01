@@ -7,6 +7,7 @@ echo "================================================"
 # Kill any existing processes
 pkill -f "api_server.py" 2>/dev/null || true
 pkill -f "nicegui_dashboard.py" 2>/dev/null || true
+pkill -f "ai_assistant_bot.py" 2>/dev/null || true
 
 sleep 1
 
@@ -25,6 +26,14 @@ echo "🔐 Starting OAuth Server (port 5050)..."
 python3 scripts/oauth_server.py > /tmp/oauth_server.log 2>&1 &
 OAUTH_PID=$!
 echo "✅ OAuth server started (PID: $OAUTH_PID)"
+
+# Start Telegram Bot (if configured)
+if grep -q "TELEGRAM_BOT_TOKEN" .env; then
+    echo "🤖 Starting Telegram Bot..."
+    python3 scripts/ai_assistant_bot.py > /tmp/telegram_bot.log 2>&1 &
+    BOT_PID=$!
+    echo "✅ Telegram Bot started (PID: $BOT_PID)"
+fi
 
 # Wait for Flask to be ready
 sleep 2
@@ -57,6 +66,7 @@ echo "🛑 To stop servers:"
 echo "  pkill -f 'api_server.py'"
 echo "  pkill -f 'oauth_server.py'"
 echo "  pkill -f 'nicegui_dashboard.py'"
+echo "  pkill -f 'ai_assistant_bot.py'"
 echo ""
 
 # Keep script running

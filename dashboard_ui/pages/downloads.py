@@ -2,256 +2,258 @@ from nicegui import ui
 from datetime import datetime, timedelta
 from ..common import Components
 from ..state import async_post
+import asyncio
 
 def render_page(state):
-    Components.section_header('Data Center', 'Historical market data downloader', 'cloud_download')
+    Components.section_header('Data Center', 'Direct Instrument Download & Snapshot', 'cloud_download')
     
-    with ui.row().classes('w-full gap-6 items-start'):
-        # Left Column: Controls
-        with ui.column().classes('flex-[2] gap-6'):
-            with Components.card():
-                with ui.row().classes('w-full justify-between items-center mb-4'):
-                    ui.label('Instrument Selection').classes('text-lg font-bold')
-                    ui.icon('search', size='sm').classes('text-slate-500')
-                
-                # Chip container (Moved to top for visibility)
-                chip_container = ui.row().classes('gap-2 mb-4 min-h-[40px] w-full p-2 bg-slate-950/30 rounded border border-slate-800')
-                
-                def clear_all_symbols():
-                    state.selected_symbols.clear()
-                    render_chips()
-
-                def render_chips():
-                    chip_container.clear()
-                    with chip_container:
-                        if not state.selected_symbols:
-                            ui.label('No symbols selected').classes('text-xs text-slate-500 italic')
+    # Main Container
+    with ui.column().classes('w-full gap-6'):
+        
+        # --- 1. Instrument Input (Direct Key) ---
+        with Components.card():
+            ui.label('Step 1: Target Instruments').classes('text-lg font-bold mb-2')
+            
+            with ui.row().classes('w-full items-start gap-4'):
+                # Left: Main Input
+                with ui.column().classes('flex-1'):
+                    ui.label('Enter Instrument Keys (comma separated/newline)').classes('text-xs text-slate-400')
+                    
+                    # Store keys in state list or use a bound variable
+                    # We'll use the existing state.selected_symbols but treat them as Keys now
+                    
+                    def keys_updated(e):
+                        val = e.value
+                        if val:
+                             # Handle newline or comma
+                            keys = val.replace('\n', ',').split(',')
+                            state.selected_symbols = [k.strip() for k in keys if k.strip()]
                         else:
-                            # Add Clear All button if strict selection exists
-                            ui.button(icon='delete_sweep', on_click=clear_all_symbols).props('flat dense round color=red').tooltip('Clear all selections')
-                            
-                        for s in state.selected_symbols:
-                            ui.chip(s, removable=True, on_remove=lambda sym=s: remove_symbol(sym)) \
-                                .classes('bg-indigo-900/50 border border-indigo-500/30 text-xs')
-
-                def add_symbol(val):
-                    if not val: return
-                    val = val.upper().strip()
-                    if val and val not in state.selected_symbols:
-                        state.selected_symbols.append(val)
-                        render_chips()
-
-                def remove_symbol(sym):
-                    if sym in state.selected_symbols:
-                        state.selected_symbols.remove(sym)
-                        render_chips()
-                
-                # Tabs for Universe Selection
-                with ui.tabs().classes('w-full text-slate-400 border-b border-slate-800') as tabs:
-                    t_nse = ui.tab('NSE EQ').classes('text-xs')
-                    t_bse = ui.tab('BSE EQ').classes('text-xs')
-                    t_sme = ui.tab('SME').classes('text-xs')
-                    t_debt = ui.tab('Debt').classes('text-xs')
-                    t_gold = ui.tab('Gold').classes('text-xs')
-                    t_indices = ui.tab('Indices').classes('text-xs')
-                    t_etf = ui.tab('ETFs').classes('text-xs')
-
-                # State for tracking user input (Robustness Fix)
-                pending_inputs = {} 
-                last_focused_category = {'val': 'NSE_EQ'} # Default to first tab
-
-                with ui.tab_panels(tabs, value=t_nse).classes('w-full bg-transparent mt-2'):
+                            state.selected_symbols = []
                     
-                    # Helper for search boxes
-                    def instrument_search_box(category, label):
-                        # PERFORMANCE OPTIMIZATION & ROBUSTNESS: 
-                        # Use server-side filtering and track pending inputs.
-                        
-                        async def on_input(e):
-                            val = e.args
-                            # ROBUSTNESS: Capture typed text even if not selected
-                            pending_inputs[category] = val
-                            
-                            if not val: return
-                            if len(val) < 2: return 
-                            
-                            opts = await state.search_instruments(category, val)
-                            sel.options = opts
-                            sel.update()
+                    # Initial value from state
+                    init_val = ", ".join(state.selected_symbols) if state.selected_symbols else ""
+                    
+                    key_input = ui.textarea(
+                        value=init_val, 
+                        placeholder='NSE_EQ|INE848E01016, NSE_FO|50911...'
+                    ).props('outlined dense dark input-style="font-family: monospace" rows=3').classes('w-full font-mono text-sm')
+                    
+                    key_input.on('input', keys_updated)
+                    
+                    ui.label(f'{len(state.selected_symbols)} keys ready').bind_text_from(state, 'selected_symbols', lambda s: f"{len(s)} keys ready").classes('text-xs text-indigo-400 mt-1')
 
-                        sel = ui.select(
-                            options=[], 
-                            label=label,
-                            with_input=True,
-                            clearable=True,
-                            new_value_mode='add-unique' 
-                        ).props('outlined dense dark use-input hide-selected fill-input input-debounce="300" behavior="menu" placeholder="Type to search (e.g. REL)..."').classes('w-full')
+                # Right: Quick Helper (Search)
+                with ui.column().classes('w-full md:w-1/3 bg-slate-800/50 p-3 rounded border border-slate-700'):
+                    ui.label('Instrument Key Finder').classes('text-sm font-bold text-indigo-300')
+                    
+                    search_input = ui.input(placeholder='Search Name (e.g. RELIANCE)').props('dense outlined dark append-icon=search').classes('w-full text-xs')
+                    
+                    results_container = ui.column().classes('w-full gap-1 mt-2 max-h-[150px] overflow-y-auto pr-1')
+                    
+                    async def perform_search(e=None):
+                        # Use the input value directly to support different event types (Change, Key, Button)
+                        val = search_input.value
+                        if not val: return
+                        if len(val) < 2: 
+                            ui.notify('Enter at least 2 characters', type='warning', position='bottom-right')
+                            return
                         
-                        # Handle input typing
-                        sel.on('input-value', on_input)
+                        results_container.clear()
+                        with results_container:
+                            ui.spinner('dots', size='sm')
+                            
+                        rows = await state.search_instrument_details(val)
                         
-                        # Track Focus for "Smart Selection"
-                        # We use on('focus') via HTML props since nicegui select doesn't expose it directly conveniently in python events sometimes, 
-                        # but actually we can just update last_focused on input or click.
-                        # Simplest is updating on input.
-                        
-                        def on_select(e):
-                            if e.args:
-                                add_symbol(e.args)
-                                sel.set_value(None)
-                                pending_inputs[category] = '' # Clear pending on success
+                        results_container.clear()
+                        with results_container:
+                            if not rows:
+                                ui.label(f'No results for "{val}"').classes('text-xs text-slate-500 italic')
+                                return
                                 
-                        sel.on('update:model-value', on_select)
-                        
-                        # Set active category on interaction
-                        def set_active():
-                            last_focused_category['val'] = category
-                        
-                        sel.on('click', set_active)
-                        sel.on('focus', set_active)
+                            for row in rows:
+                                key = row['instrument_key']
+                                sym = row['symbol']
+                                seg = row['segment_id']
+                                exch = row['trading_symbol']
+                                
+                                def add_key(k=key):
+                                    current = key_input.value
+                                    if current:
+                                        if k not in current:
+                                            key_input.set_value(current + ', ' + k)
+                                            # Also trigger update manually since set_value might not fire input
+                                            current_list = [x.strip() for x in current.split(',')]
+                                            current_list.append(k)
+                                            state.selected_symbols = current_list
+                                    else:
+                                        key_input.set_value(k)
+                                        state.selected_symbols = [k]
+                                    ui.notify(f'Added {k}', position='bottom-right')
 
-                        # Fallback "Add" button
-                        with sel.add_slot('append'):
-                            ui.button(icon='add', on_click=lambda: (add_symbol(sel.value), sel.set_value(None))).props('flat dense round color=indigo')
-                            
-                        return sel
+                                with ui.row().classes('w-full justify-between items-center bg-slate-900/50 p-1 rounded hover:bg-slate-700 cursor-pointer text-xs'):
+                                    with ui.row().classes('gap-2 items-center'):
+                                        ui.label(sym).classes('font-bold')
+                                        ui.label(seg).classes('text-[10px] text-slate-400')
+                                        ui.label(exch).classes('text-[10px] text-slate-500 truncate max-w-[80px]')
+                                    ui.button(icon='add', on_click=add_key).props('flat dense size=xs color=green')
 
-                    with ui.tab_panel(t_nse).classes('p-0'):
-                        instrument_search_box('NSE_EQ', 'Search NSE Stocks')
-
-                    with ui.tab_panel(t_bse).classes('p-0'):
-                        instrument_search_box('BSE_EQ', 'Search BSE Stocks')
-
-                    with ui.tab_panel(t_sme).classes('p-0'):
-                        instrument_search_box('SME_EQ', 'Search SME Stocks (NSE/BSE)')
-                        
-                    with ui.tab_panel(t_debt).classes('p-0'):
-                        instrument_search_box('DEBT', 'Search Bonds & Fixed Income')
-                        
-                    with ui.tab_panel(t_gold).classes('p-0'):
-                        instrument_search_box('GOLD', 'Search Gold Bonds (SGB)')
-                        
-                    with ui.tab_panel(t_indices).classes('p-0'):
-                        instrument_search_box('INDICES', 'Search Market Indices')
-                        
-                    with ui.tab_panel(t_etf).classes('p-0'):
-                        instrument_search_box('ETFs', 'Search Exchange Traded Funds')
-
-                render_chips()
-                
-                # Date Selection
-                ui.label('Time Period').classes('text-sm font-bold text-slate-400 mt-4 mb-2')
-                with ui.row().classes('w-full gap-4'):
-                    d_from = Components.date_input('Start From', value=(datetime.now() - timedelta(30)).strftime('%Y-%m-%d'))
-                    d_to = Components.date_input('End To', value=datetime.now().strftime('%Y-%m-%d'))
-                
-                # Quick Ranges
-                with ui.row().classes('gap-2 mt-2'):
-                    def set_range(days: int):
-                        d_to.value = datetime.now().strftime('%Y-%m-%d')
-                        d_from.value = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+                    # Bindings
+                    search_input.on('keydown.enter', perform_search)
+                    search_input.on('blur', perform_search)
+                    # Debounce for typing
+                    search_input_timer = None
+                    def on_type(e):
+                         nonlocal search_input_timer
+                         if search_input_timer: search_input_timer.cancel()
+                         if len(e.value) > 2:
+                             search_input_timer = asyncio.create_task(asyncio.sleep(0.5))
+                             search_input_timer.add_done_callback(lambda _: asyncio.create_task(perform_search()))
                     
-                    for label, days in [('1W', 7), ('1M', 30), ('3M', 90), ('YTD', (datetime.now() - datetime(datetime.now().year, 1, 1)).days)]:
-                        ui.chip(label, on_click=lambda d=days: set_range(d)).props('clickable dense square outline icon=calendar_today').classes('hover:bg-indigo-500 hover:text-white text-xs')
+                    search_input.on('input', on_type)
 
-                # Data Granularity
-                ui.label('Data Granularity').classes('text-sm font-bold text-slate-400 mt-4 mb-2')
-                interval_select = ui.select(
-                    options={
-                        '1m': '1 Minute',
-                        '5m': '5 Minutes',
-                        '15m': '15 Minutes',
-                        '30m': '30 Minutes',
-                        '1h': '1 Hour',
-                        '1d': 'Daily (EOD)',
-                        'week': 'Weekly',
-                        'month': 'Monthly'
-                    },
-                    value='1d',
-                    label='Candle Interval'
-                ).props('outlined dense dark options-dense').classes('w-full')
+            # --- Configurations ---
+            ui.separator().classes('my-4 border-slate-800')
+            ui.label('Step 2: Action & Settings').classes('text-lg font-bold mb-2')
+            
+            mode_select = ui.toggle(['Historical OHLC', 'Market Snapshot'], value='Historical OHLC').props('no-caps spread color=indigo toggle-color=indigo-900').classes('w-full mb-4')
+
+            with ui.row().classes('w-full gap-6 mt-2').bind_visibility_from(mode_select, 'value', lambda v: v == 'Historical OHLC'):
+                # Date Selection
+                with ui.column().classes('flex-1'):
+                    ui.label('Time Period').classes('text-sm font-bold text-slate-400 mb-2')
+                    with ui.row().classes('w-full gap-4'):
+                        d_from = Components.date_input('Start From', value=(datetime.now() - timedelta(30)).strftime('%Y-%m-%d'))
+                        d_to = Components.date_input('End To', value=datetime.now().strftime('%Y-%m-%d'))
+                    
+                    # Quick Ranges
+                    with ui.row().classes('gap-2 mt-2'):
+                        def set_range(days: int):
+                            d_to.value = datetime.now().strftime('%Y-%m-%d')
+                            d_from.value = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+                        
+                        for label, days in [('1W', 7), ('1M', 30), ('3M', 90), ('YTD', (datetime.now() - datetime(datetime.now().year, 1, 1)).days)]:
+                            ui.chip(label, on_click=lambda d=days: set_range(d)).props('clickable dense square outline icon=calendar_today').classes('hover:bg-indigo-500 hover:text-white text-xs')
 
                 # Options
-                ui.label('Output Options').classes('text-sm font-bold text-slate-400 mt-4 mb-2')
-                with ui.column().classes('gap-2'):
-                        save_db_switch = ui.switch('Save to Database', value=True).props('color=green dense dark')
-                        with ui.row().classes('items-center gap-4'):
-                            download_local_switch = ui.switch('Download Local File', value=False).props('color=blue dense dark')
-                            file_format = ui.select(['parquet', 'csv'], value='parquet', label='Format').props('dense outlined dark options-dense').classes('w-32').bind_visibility_from(download_local_switch, 'value')
-
-                status_label = ui.label('').classes('text-sm mt-2')
-
-                async def run_download():
-                    # ROBUSTNESS: Check for pending input if no selection
-                    if not state.selected_symbols:
-                        # Check if user typed something but didn't hit enter
-                        cat = last_focused_category['val']
-                        pending_text = pending_inputs.get(cat, '').strip()
-                        
-                        if pending_text and len(pending_text) > 1:
-                            # Auto-add the pending text
-                            add_symbol(pending_text)
-                            ui.notify(f"Auto-selected '{pending_text}'", type='info')
-                            # Continue to download...
-                        else:
-                            ui.notify('Select at least one symbol', type='warning')
-                            return
+                with ui.column().classes('flex-1'):
+                    ui.label('Output Settings').classes('text-sm font-bold text-slate-400 mb-2')
+                    interval_select = ui.select(
+                        options={
+                            '1m': '1 Minute', '5m': '5 Minutes', '15m': '15 Minutes', '30m': '30 Minutes',
+                            '1h': '1 Hour', '1d': 'Daily (EOD)', 'week': 'Weekly', 'month': 'Monthly'
+                        },
+                        value='1d', label='Candle Interval'
+                    ).props('outlined dense dark options-dense').classes('w-full')
                     
-                    if not save_db_switch.value and not download_local_switch.value:
-                        ui.notify('Select at least one output option', type='warning')
-                        return
-                    
-                    status_label.text = '⏳ Requesting data...'
-                    
-                    # Determine export format
-                    fmt = file_format.value if download_local_switch.value else None
+                    with ui.row().classes('gap-4 mt-2'):
+                         save_db_switch = ui.switch('Save to SQLite', value=True).props('color=green dense dark')
+                         download_local_switch = ui.switch('Download File', value=False).props('color=blue dense dark')
+                         file_format = ui.select(['parquet', 'csv'], value='parquet', label='Format').props('dense outlined dark options-dense').classes('w-24').bind_visibility_from(download_local_switch, 'value')
 
-                    res = await async_post('/api/download/stocks', {
-                        "symbols": state.selected_symbols,
-                        "start_date": d_from.value,
-                        "end_date": d_to.value,
-                        "interval": interval_select.value,
-                        "save_db": save_db_switch.value,
-                        "export_format": fmt
-                    })
-                    
-                    if 'error' in res:
-                        status_label.text = '❌ Failed'
-                        status_label.classes('text-red-400')
-                    else:
-                        status_label.text = '✅ Complete'
-                        status_label.classes('text-green-400')
-                        
-                        # Trigger Download if requested
-                        if download_local_switch.value and res.get('filepath'):
-                            ui.download(res['filepath'])
-                            ui.notify('File download started', type='positive')
-                            
-                        # Clear symbols after successful request (Enhancement for User State)
-                        clear_all_symbols()
-                            
-                        await refresh_dl_list()
+            # --- Actions ---
+            status_label = ui.label('').classes('text-sm mt-2')
+            result_area = ui.column().classes('w-full mt-4')
 
-                ui.button('Download Data', icon='download', on_click=run_download).classes('w-full mt-4 bg-indigo-600 hover:bg-indigo-500')
-
-        # Right Column: History
-        with ui.column().classes('flex-[3]'):
-            with Components.card():
-                ui.label('Recent Files').classes('text-lg font-bold mb-4')
-                history_list = ui.column().classes('w-full gap-2')
+            async def run_download():
+                # Re-fetch from input to be sure
+                raw = key_input.value or ""
+                keys = [k.strip() for k in raw.replace('\n', ',').split(',') if k.strip()]
                 
-                async def refresh_dl_list():
-                    hist = await state.fetch_download_history()
-                    history_list.clear()
-                    with history_list:
-                        if not hist.get('files'):
-                            ui.label('No files found').classes('text-slate-500 italic')
-                        for f in hist['files'][:8]:
-                            with ui.row().classes('w-full justify-between items-center bg-slate-800/30 p-3 rounded hover:bg-slate-800/50 transition'):
-                                with ui.row().classes('gap-3 items-center'):
-                                    ui.icon('description', size='sm').classes('text-indigo-400')
-                                    ui.label(f['filename']).classes('font-mono text-sm')
-                                ui.label(f"{f['size']/1024:.0f} KB").classes('text-xs text-slate-500')
+                if not keys:
+                    ui.notify('Please enter at least one Instrument Key', type='warning')
+                    return
+                
+                status_label.text = f'⏳ Processing {len(keys)} instruments...'
+                result_area.clear()
+                
+                # MODE: MARKET SNAPSHOT
+                if mode_select.value == 'Market Snapshot':
+                     res = await async_post('/api/market-quote', {
+                         "symbols": keys
+                     })
+                     
+                     if 'error' in res:
+                         status_label.text = f"❌ Error: {res['error']}"
+                         return
+                    
+                     status_label.text = '✅ Complete'
+                     
+                     with result_area:
+                         with ui.card().classes('w-full bg-slate-900 border border-slate-700'):
+                             with ui.row().classes('justify-between w-full'):
+                                 ui.label('Market Snapshot (Live)').classes('text-lg font-bold')
+                                 ui.button('Clear', on_click=result_area.clear, icon='close').props('flat dense')
+                             
+                             data_map = res.get('data', {})
+                             with ui.column().classes('gap-4 w-full'):
+                                 # Grid view for quotes usually better
+                                 with ui.grid(columns=2).classes('w-full gap-4'):
+                                     for key, quote in data_map.items():
+                                         with ui.card().classes('bg-slate-800 p-3 w-full'):
+                                             with ui.row().classes('justify-between w-full border-b border-slate-700 pb-2 mb-2'):
+                                                 ui.label(key).classes('font-mono font-bold text-xs text-indigo-300')
+                                                 ui.label(f"₹{quote.get('last_price', 'N/A')}").classes('text-lg font-bold text-white')
+                                             
+                                             with ui.grid(columns=2).classes('w-full gap-2 text-xs text-slate-400'):
+                                                 ohlc = quote.get('ohlc', {})
+                                                 ui.label(f"Open: {ohlc.get('open')}")
+                                                 ui.label(f"High: {ohlc.get('high')}")
+                                                 ui.label(f"Low: {ohlc.get('low')}")
+                                                 ui.label(f"Close: {ohlc.get('close')}")
+                                                 ui.label(f"Vol: {quote.get('volume')}")
+                                                 ui.label(f"OI: {quote.get('oi')}")
 
-                # Init Load
-                ui.timer(0.1, refresh_dl_list, once=True)
+                     return
+
+                # MODE: HISTORICAL OHLC
+                if not save_db_switch.value and not download_local_switch.value:
+                    ui.notify('Select at least one output option', type='warning')
+                    return
+                
+                fmt = file_format.value if download_local_switch.value else None
+
+                res = await async_post('/api/download/stocks', {
+                    "symbols": keys,
+                    "start_date": d_from.value,
+                    "end_date": d_to.value,
+                    "interval": interval_select.value,
+                    "save_db": save_db_switch.value,
+                    "export_format": fmt
+                })
+                
+                if 'error' in res:
+                    status_label.text = f"❌ Failed: {res['error']}"
+                    status_label.classes('text-red-400')
+                else:
+                    status_label.text = f"✅ Success: {res.get('rows', 0)} rows fetched."
+                    status_label.classes('text-green-400')
+                    if download_local_switch.value and res.get('filepath'):
+                        ui.download(res['filepath'])
+                        ui.notify('File download started', type='positive')
+                    await refresh_dl_list()
+            
+            # Dynamic Button Label
+            btn = ui.button('Execute', icon='play_arrow', on_click=run_download).classes('w-full mt-4 bg-indigo-600 hover:bg-indigo-500')
+            btn.bind_text_from(mode_select, 'value', lambda v: 'Get Snapshot' if v == 'Market Snapshot' else 'Download History')
+            btn.bind_prop_from(mode_select, 'value', lambda v: 'icon=bolt' if v == 'Market Snapshot' else 'icon=history')
+
+        # --- 2. Recent Files ---
+        with Components.card():
+            ui.label('Recent Downloads').classes('text-sm font-bold mb-4 text-slate-400')
+            history_list = ui.column().classes('w-full gap-2')
+            
+            async def refresh_dl_list():
+                hist = await state.fetch_download_history()
+                history_list.clear()
+                with history_list:
+                    if not hist.get('files'):
+                        ui.label('No files found').classes('text-slate-500 italic text-xs')
+                    for f in hist['files'][:8]:
+                        with ui.row().classes('w-full justify-between items-center bg-slate-800/30 p-2 rounded hover:bg-slate-800/50 transition'):
+                            with ui.row().classes('gap-3 items-center'):
+                                ui.icon('description', size='xs').classes('text-indigo-400')
+                                ui.label(f['filename']).classes('font-mono text-xs')
+                            ui.label(f"{f['size']/1024:.0f} KB").classes('text-[10px] text-slate-500')
+
+            ui.timer(1.0, refresh_dl_list)

@@ -34,6 +34,10 @@ def render_gainers_losers_widget():
             t_nse_fut = ui.tab('NSE FUT')
             t_fo_eq = ui.tab('NSE F&O EQ')
             t_vol = ui.tab('Vol Shockers')
+            # New Indices Tabs
+            t_n50 = ui.tab('NIFTY 50')
+            t_n500 = ui.tab('NIFTY 500')
+            t_nbank = ui.tab('NIFTY BANK')
         
         # State tracking
         state_tracker = {
@@ -65,6 +69,7 @@ def render_gainers_losers_widget():
                     with ui.element('thead').classes('text-slate-500 border-b border-slate-700'):
                         with ui.element('tr'):
                             with ui.element('th').classes('pb-2 text-left pl-2'): ui.label('Symbol')
+                            with ui.element('th').classes('pb-2 text-left hidden md:table-cell'): ui.label('Sector')
                             with ui.element('th').classes('pb-2'): ui.label('Price')
                             with ui.element('th').classes('pb-2'): ui.label('% Chg')
                             with ui.element('th').classes('pb-2 hidden sm:table-cell pr-2'): ui.label('Vol')
@@ -78,6 +83,11 @@ def render_gainers_losers_widget():
                                 # Symbol
                                 with ui.element('td').classes('py-2 font-bold text-left pl-2'):
                                     ui.label(r['symbol'])
+                                    
+                                # Sector (New)
+                                with ui.element('td').classes('py-2 text-xs text-slate-500 text-left hidden md:table-cell truncate max-w-[150px]'):
+                                     ui.label(r.get('sector', '-'))
+                                     
                                 # Price
                                 with ui.element('td').classes('py-2 font-mono'):
                                     ui.label(f"₹{r['price']:,.2f}")
@@ -183,6 +193,9 @@ def render_gainers_losers_widget():
             elif val == 'NSE FUT': state_tracker['tab'] = 'NSE_FUT'
             elif val == 'NSE F&O EQ': state_tracker['tab'] = 'NSE_FO_EQ'
             elif val == 'Vol Shockers': state_tracker['tab'] = 'VOLUME_SHOCKERS'
+            elif val == 'NIFTY 50': state_tracker['tab'] = 'NIFTY_50'
+            elif val == 'NIFTY 500': state_tracker['tab'] = 'NIFTY_500'
+            elif val == 'NIFTY BANK': state_tracker['tab'] = 'NIFTY_BANK'
             else: print(f"Unknown tab: {val}")
             
             await load_active_tab()

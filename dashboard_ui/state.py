@@ -132,3 +132,46 @@ class DashboardState:
         except Exception as e:
             print(f"Error loading contracts for {underlying}: {e}")
             return []
+
+    async def search_instrument_details(self, query_text: str) -> List[Dict[str, Any]]:
+        """Search across all instruments and return details (Key, Symbol, Exchange)"""
+        return await run.io_bound(self._search_instrument_details_sync, query_text)
+
+    def _search_instrument_details_sync(self, query_text: str) -> List[Dict[str, Any]]:
+        try:
+            if not query_text or len(query_text) < 2: return []
+            
+            conn = sqlite3.connect('market_data.db')
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # Global search across all segments
+            # Updated: Use CONTAINS (%) instead of STARTSWITH to be more flexible
+            # Prioritize: 1. Exact Match, 2. Starts With, 3. NSE_EQ Segment
+            sql = """
+                SELECT instrument_key, symbol, trading_symbol, segment_id, type_code 
+                FROM instruments 
+                WHERE symbol LIKE ? OR trading_symbol LIKE ?
+                ORDER BY 
+                    CASE WHEN symbol = ? THEN 0 
+                         WHEN symbol LIKE ? THEN 1 
+                         ELSE 2 
+                    END,
+                    CASE WHEN segment_id = 'NSE_EQ' THEN 0 ELSE 1 END, 
+                    symbol ASC
+                LIMIT 100
+            """
+            
+            wild_pat = f"%{query_text.upper()}%"
+            start_pat = f"{query_text.upper()}%"
+            exact_pat = query_text.upper()
+            
+            cursor.execute(sql, (wild_pat, wild_pat, exact_pat, start_pat))
+            rows = cursor.fetchall()
+            conn.close()
+            
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"Error searching details: {e}")
+            return []
+

@@ -37,7 +37,66 @@ class OptionsChainService:
         self.base_url = "https://api.upstox.com/v2"
         self.auth_manager = AuthManager(db_path=db_path)
         logger.info(f"Initialized OptionsChainService with db={db_path}")
-    
+
+    def get_expiry_dates(self, instrument_key: str) -> List[str]:
+        """
+        Fetch available expiry dates for an instrument.
+        Uses active contracts api or option chain API to find valid dates.
+        """
+        try:
+             # Strategy: Use v2/option/contract to get all contracts, then extract unique expiries
+            token = self.auth_manager.get_valid_token()
+            if not token:
+                return []
+            
+            headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/json'}
+            url = f"{self.base_url}/option/contract"
+            params = {'instrument_key': instrument_key}
+            
+            response = requests.get(url, headers=headers, params=params, timeout=5)
+            if response.status_code == 200:
+                data = response.json().get('data', [])
+                # Extract unique expiry dates
+                dates = sorted(list(set([c['expiry'] for c in data])))
+                return dates
+            return []
+        except Exception as e:
+            logger.error(f"Error fetching expiries: {e}")
+            return []
+
+    def get_option_greeks(self, instrument_keys: List[str]) -> Dict:
+        """
+        Fetch detailed option greeks using v3 API.
+        Response includes: theta, delta, gamma, vega, iv, etc.
+        """
+        try:
+            token = self.auth_manager.get_valid_token()
+            if not token:
+                logger.error("No token for greeks")
+                return {}
+            
+            # v3 endpoint
+            url = "https://api.upstox.com/v3/market-quote/option-greek"
+            headers = {
+                'Authorization': f'Bearer {token}', 
+                'Accept': 'application/json'
+            }
+            
+            # API supports comma separated keys
+            keys_str = ",".join(instrument_keys)
+            params = {'instrument_key': keys_str}
+            
+            response = requests.get(url, headers=headers, params=params, timeout=5)
+            if response.status_code == 200:
+                data = response.json().get('data', {})
+                return data
+            else:
+                 logger.error(f"Greeks API failed: {response.status_code} {response.text}")
+                 return {}
+        except Exception as e:
+            logger.error(f"Error fetching greeks: {e}")
+            return {}
+
     def is_market_open(self) -> Tuple[bool, str]:
         """
         Check if Indian stock market is currently open
@@ -102,11 +161,65 @@ class OptionsChainService:
         market_open, market_msg = self.is_market_open()
         logger.info(f"[OPTIONS] Market status: {market_msg}")
         
-        # For now, return mock data quickly since Upstox API might not have option chain endpoint
-        # or might require different authentication
-        logger.info("[OPTIONS] Using mock data (Upstox option chain API not yet configured)")
-        return self._mock_option_chain(symbol, expiry_date, market_open)
+        # For now, try to fetch real data
+        logger.info(f"[OPTIONS] Fetching live data for {symbol} Expiry: {expiry_date}")
         
+        try:
+            # Get valid token
+            token = self.auth_manager.get_valid_token()
+            if not token:
+                logger.error("[OPTIONS] No valid Upstox token available")
+                return self._mock_option_chain(symbol, expiry_date, market_open)
+            
+            # Construct API request
+            headers = {
+                'Authorization': f'Bearer {token}',
+                'Accept': 'application/json'
+            }
+            
+            # Map symbol to key
+            inst_key = self._get_instrument_key(symbol)
+            params = {
+                'instrument_key': inst_key
+            }
+            
+            if expiry_date:
+                params['expiry_date'] = expiry_date
+            
+            # If no expiry provided for Live API, we MUST provide one or the API might fail or return default?
+            # Documentation says expiry_date is REQUIRED query param.
+            if not expiry_date:
+                # auto-fetch expiries
+                dates = self.get_expiry_dates(inst_key)
+                if dates:
+                    params['expiry_date'] = dates[0]
+                    # Also update result to show we picked this date
+                    expiry_date = dates[0]
+                else:
+                    logger.warning("Could not find expiry dates, defaulting to mock")
+                    return self._mock_option_chain(symbol, expiry_date, market_open)
+
+            logger.debug(f"[OPTIONS] API request: {self.base_url}/option/chain, params={params}")
+            
+            response = requests.get(
+                f"{self.base_url}/option/chain",
+                headers=headers,
+                params=params,
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Parse
+                return self._process_upstox_response(data, symbol, market_open)
+            
+            logger.warning(f"API Failed {response.status_code}: {response.text}")
+            return self._mock_option_chain(symbol, expiry_date, market_open)
+
+        except Exception as e:
+            logger.error(f"[OPTIONS] Error fetching chain: {e}", exc_info=True)
+            return self._mock_option_chain(symbol, expiry_date, market_open)
+
         # TODO: Uncomment below when Upstox option chain API is properly configured
         """
         try:
@@ -189,52 +302,79 @@ class OptionsChainService:
     
     def _process_upstox_response(self, data: Dict, symbol: str, market_open: bool) -> Dict:
         """Process Upstox API response into standardized format"""
-        logger.debug("[OPTIONS] Processing Upstox response")
-        
-        # Extract data from Upstox response
-        # Actual structure will depend on Upstox API format
-        # This is a template - adjust based on real API response
+        # data structure based on v2 API documentation
+        resp_data = data.get('data', [])
+        if not resp_data:
+             return self._mock_option_chain(symbol, None, market_open)
+
+        # The v2 API returns a LIST of objects (one per strike/expiry combo? or one object with strikes?)
+        # Doc says Response Body: { status: success, data: [ { expiry, strike_price, call_options, put_options ... } ] }
+        # So it is a list of strikes.
         
         strikes_data = []
-        
-        # Parse Upstox response
-        # TODO: Update this based on actual Upstox API response structure
-        option_data = data.get('data', {})
-        
-        for strike_data in option_data.get('strikes', []):
-            strike = {
-                'strike': strike_data.get('strike_price'),
-                'call': {
-                    'ltp': strike_data.get('call', {}).get('last_price'),
-                    'volume': strike_data.get('call', {}).get('volume'),
-                    'oi': strike_data.get('call', {}).get('open_interest'),
-                    'iv': strike_data.get('call', {}).get('iv'),
-                    'delta': strike_data.get('call', {}).get('delta'),
-                    'gamma': strike_data.get('call', {}).get('gamma'),
-                    'theta': strike_data.get('call', {}).get('theta'),
-                    'vega': strike_data.get('call', {}).get('vega'),
-                    'bid': strike_data.get('call', {}).get('bid'),
-                    'ask': strike_data.get('call', {}).get('ask'),
-                },
-                'put': {
-                    'ltp': strike_data.get('put', {}).get('last_price'),
-                    'volume': strike_data.get('put', {}).get('volume'),
-                    'oi': strike_data.get('put', {}).get('open_interest'),
-                    'iv': strike_data.get('put', {}).get('iv'),
-                    'delta': strike_data.get('put', {}).get('delta'),
-                    'gamma': strike_data.get('put', {}).get('gamma'),
-                    'theta': strike_data.get('put', {}).get('theta'),
-                    'vega': strike_data.get('put', {}).get('vega'),
-                    'bid': strike_data.get('put', {}).get('bid'),
-                    'ask': strike_data.get('put', {}).get('ask'),
+        underlying_price = 0
+        expiry_date = ""
+
+        # Sort by strike price
+        try:
+            sorted_data = sorted(resp_data, key=lambda x: x.get('strike_price', 0))
+            
+            for item in sorted_data:
+                # Capture metadata from first item
+                if not underlying_price:
+                    underlying_price = item.get('underlying_spot_price', 0)
+                if not expiry_date:
+                    expiry_date = item.get('expiry', '')
+
+                # Call Data
+                call = item.get('call_options', {})
+                call_md = call.get('market_data', {})
+                call_greeks = call.get('option_greeks', {})
+                
+                # Put Data
+                put = item.get('put_options', {})
+                put_md = put.get('market_data', {})
+                put_greeks = put.get('option_greeks', {})
+
+                strike = {
+                    'strike': item.get('strike_price'),
+                    'call': {
+                        'instrument_key': call.get('instrument_key'),
+                        'ltp': call_md.get('ltp'),
+                        'volume': call_md.get('volume'),
+                        'oi': call_md.get('oi'),
+                        'iv': call_greeks.get('iv'),
+                        'delta': call_greeks.get('delta'),
+                        'gamma': call_greeks.get('gamma'),
+                        'theta': call_greeks.get('theta'),
+                        'vega': call_greeks.get('vega'),
+                        'bid': call_md.get('bid_price'),
+                        'ask': call_md.get('ask_price'),
+                    },
+                    'put': {
+                        'instrument_key': put.get('instrument_key'),
+                        'ltp': put_md.get('ltp'),
+                        'volume': put_md.get('volume'),
+                        'oi': put_md.get('oi'),
+                        'iv': put_greeks.get('iv'),
+                        'delta': put_greeks.get('delta'),
+                        'gamma': put_greeks.get('gamma'),
+                        'theta': put_greeks.get('theta'),
+                        'vega': put_greeks.get('vega'),
+                        'bid': put_md.get('bid_price'),
+                        'ask': put_md.get('ask_price'),
+                    }
                 }
-            }
-            strikes_data.append(strike)
+                strikes_data.append(strike)
+                
+        except Exception as e:
+            logger.error(f"Error parsing response: {e}")
+            return self._mock_option_chain(symbol, None, market_open)
         
         result = {
             'symbol': symbol,
-            'expiry_date': option_data.get('expiry_date'),
-            'underlying_price': option_data.get('underlying_value'),
+            'expiry_date': expiry_date,
+            'underlying_price': underlying_price,
             'timestamp': datetime.now().isoformat(),
             'market_open': market_open,
             'strikes': strikes_data

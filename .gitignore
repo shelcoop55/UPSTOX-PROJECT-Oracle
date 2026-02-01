@@ -1,0 +1,10 @@
+.env
+market_data.db
+__pycache__/
+*.pyc
+logs/
+downloads/
+.DS_Store
+.venv/
+cache/
+debug_dumps/

@@ -241,6 +241,47 @@ class UpstoxLiveAPI:
         except Exception as e:
             logger.error(f"Error fetching batch quotes: {e}", exc_info=True)
             return {}
+
+    @with_retry(max_attempts=2)
+    def get_historical_candles(self, instrument_key: str, interval: str, to_date: str, from_date: str) -> List[List[Any]]:
+        """
+        Fetch historical candles for an active instrument
+        Endpoint: /v2/historical-candle/{instrumentKey}/{interval}/{toDate}/{fromDate}
+        
+        Args:
+            instrument_key: Upstox instrument key (e.g., 'NSE_EQ|INE002A01018')
+            interval: Candle interval ('1minute', '30minute', 'day', etc.)
+            to_date: End date (YYYY-MM-DD)
+            from_date: Start date (YYYY-MM-DD)
+            
+        Returns:
+            List of candles [[timestamp, open, high, low, close, volume, oi], ...]
+        """
+        try:
+            headers = self._get_headers()
+            if not headers:
+                return []
+            
+            # Construct URL
+            url = f"{self.BASE_URL}/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}"
+            
+            response = self.session.get(url, headers=headers, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                candles = data.get('data', {}).get('candles', [])
+                if candles:
+                    logger.info(f"Fetched {len(candles)} candles for {instrument_key}")
+                else:
+                    logger.warning(f"No candles found for {instrument_key}")
+                return candles
+            else:
+                logger.error(f"Historical candle fetch failed: {response.status_code} - {response.text}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"Error fetching historical candles: {e}", exc_info=True)
+            return []
     
     @with_retry(max_attempts=2)
     def get_funds(self) -> Optional[Dict]:

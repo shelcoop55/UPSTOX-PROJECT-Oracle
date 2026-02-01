@@ -41,19 +41,84 @@ import sys
 import sqlite3
 import argparse
 import requests
+import time
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scripts.db_manager import initialize_database, get_oauth_token
-from scripts.oauth_server import ensure_token_valid
+from scripts.auth_manager import AuthManager
 
+def ensure_token_valid():
+    """Get a valid access token using AuthManager."""
+    try:
+        auth = AuthManager()
+        # Use simple get_valid_token logic (assuming single user setup)
+        # AuthManager.get_valid_token requires user_id usually, but defaults to 'default'
+        token = auth.get_valid_token()
+        if not token:
+            raise Exception("No valid token returned from AuthManager")
+        return token
+    except Exception as e:
+        print(f"Auth Error: {e}")
+        raise
 
 # Constants
 API_BASE_URL = "https://api.upstox.com/v2"
 DB_PATH = "market_data.db"
+
+# Mapping for common symbols to Instrument Keys (required for Expired API)
+INSTRUMENT_KEYS = {
+    'NIFTY': 'NSE_INDEX|Nifty 50',
+    'BANKNIFTY': 'NSE_INDEX|Nifty Bank',
+    'FINNIFTY': 'NSE_INDEX|Nifty Fin Service',
+    'INDIA VIX': 'NSE_INDEX|India VIX'
+}
+
+def get_instrument_key(symbol: str) -> str:
+    """Resolve symbol to instrument key using hardcoded map or DB lookup."""
+    upper_sym = symbol.upper().strip()
+    
+    # 1. Check Hardcoded Map
+    if upper_sym in INSTRUMENT_KEYS:
+        return INSTRUMENT_KEYS[upper_sym]
+    
+    # 2. Check if it looks like a key already (contains |)
+    if '|' in upper_sym:
+        return upper_sym
+        
+    # 3. Try DB Lookup (Equity/Index)
+    try:
+        if os.path.exists(DB_PATH):
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            # Try exact match on symbol first (e.g. RELIANCE)
+            # Prioritize NSE_EQ over others
+            c.execute("""
+                SELECT instrument_key FROM instruments 
+                WHERE symbol = ? AND segment_id IN ('NSE_EQ', 'BSE_EQ') 
+                ORDER BY CASE WHEN segment_id = 'NSE_EQ' THEN 1 ELSE 2 END 
+                LIMIT 1
+            """, (upper_sym,))
+            row = c.fetchone()
+            if row:
+                conn.close()
+                return row[0]
+            
+            # Try trading symbol match
+            c.execute("SELECT instrument_key FROM instruments WHERE trading_symbol = ? LIMIT 1", (upper_sym,))
+            row = c.fetchone()
+            if row:
+                conn.close()
+                return row[0]
+                
+            conn.close()
+    except Exception as e:
+        print(f"DB Lookup failed for {symbol}: {e}")
+        
+    # Default: Return as is (might fail if API needs key)
+    return symbol
 
 
 def ensure_expired_options_table() -> None:
@@ -85,6 +150,23 @@ def ensure_expired_options_table() -> None:
         CREATE INDEX IF NOT EXISTS idx_expired_opt_underlying_expiry 
         ON expired_options(underlying_symbol, expiry_date)
     """)
+
+    # Create table for expired candles (OHLC)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS expired_candles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            instrument_key TEXT NOT NULL,
+            interval TEXT NOT NULL,
+            timestamp DATETIME NOT NULL,
+            open REAL,
+            high REAL,
+            low REAL,
+            close REAL,
+            volume INTEGER,
+            oi INTEGER,
+            UNIQUE(instrument_key, interval, timestamp)
+        )
+    """)
     
     conn.commit()
     conn.close()
@@ -107,13 +189,19 @@ def get_available_expiries(underlying_symbol: str) -> List[str]:
         "Accept": "application/json"
     }
     
+    # Use Expired Instruments API
+    # Endpoint: /v2/expired-instruments/expiries
+    
+    inst_key = get_instrument_key(underlying_symbol)
+    
     params = {
-        "underlying_symbol": underlying_symbol
+        "instrument_key": inst_key
     }
     
     try:
+        print(f"I: Fetching expired expiries for {inst_key}...")
         response = requests.get(
-            f"{API_BASE_URL}/option/expiry",
+            f"{API_BASE_URL}/expired-instruments/expiries",
             headers=headers,
             params=params,
             timeout=10
@@ -124,18 +212,76 @@ def get_available_expiries(underlying_symbol: str) -> List[str]:
             if data.get("status") == "success":
                 expiries = data.get("data", [])
                 print(f"✓ Found {len(expiries)} expiry dates for {underlying_symbol}")
-                for exp in expiries[:5]:
-                    print(f"  - {exp}")
-                if len(expiries) > 5:
-                    print(f"  ... and {len(expiries) - 5} more")
                 return expiries
         else:
             print(f"✗ Failed to fetch expiries: {response.status_code}")
-            print(f"  Response: {response.text[:200]}")
+            try:
+                print(f"  Response: {response.json()}")
+            except:
+                print(f"   Response: {response.text[:200]}")
             return []
     
     except requests.RequestException as e:
         print(f"✗ Request error: {e}")
+        return []
+
+
+def fetch_expired_future_contracts(
+    underlying_symbol: str,
+    expiry_date: str
+) -> List[Dict[str, Any]]:
+    """
+    Fetch expired future contracts from Upstox API.
+    
+    Args:
+        underlying_symbol: Symbol like NIFTY, BANKNIFTY, INFY
+        expiry_date: Expiry date in YYYY-MM-DD format
+        
+    Returns:
+        List of future contract dictionaries
+    """
+    token = ensure_token_valid()
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+    
+    # Use Expired Instruments API
+    # Endpoint: /v2/expired-instruments/future/contract
+    
+    inst_key = get_instrument_key(underlying_symbol)
+    
+    params = {
+        "instrument_key": inst_key,
+        "expiry_date": expiry_date
+    }
+    
+    try:
+        print(f"\n📡 Fetching expired futures for {inst_key} expiry {expiry_date}")
+        
+        response = requests.get(
+            f"{API_BASE_URL}/expired-instruments/future/contract",
+            headers=headers,
+            params=params,
+            timeout=15
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("status") == "success":
+                contracts = data.get("data", [])
+                print(f"✓ Fetched {len(contracts)} future contract(s)")
+                return contracts
+            else:
+                print(f"✗ API returned error: {data.get('message')}")
+                return []
+        else:
+            print(f"✗ Failed: {response.status_code} - {response.text[:200]}")
+            return []
+            
+    except Exception as e:
+        print(f"Error fetching future contracts: {e}")
         return []
 
 
@@ -164,25 +310,25 @@ def fetch_expired_option_contracts(
         "Accept": "application/json"
     }
     
+    # Use Expired Instruments API
+    # Endpoint: /v2/expired-instruments/option/contract
+    
+    inst_key = get_instrument_key(underlying_symbol)
+    
     params = {
-        "underlying_symbol": underlying_symbol,
+        "instrument_key": inst_key,
         "expiry_date": expiry_date
     }
     
-    if option_type:
-        params["option_type"] = option_type
-    if strike_price:
-        params["strike_price"] = strike_price
+    # Note: The expired API might not support filtering by option_type/strike directly in params
+    # We might need to filter client-side if the API ignores these.
+    # But let's try passing them just in case, or filter after fetching.
     
     try:
-        print(f"\n📡 Fetching expired options for {underlying_symbol} expiry {expiry_date}")
-        if option_type:
-            print(f"   Filter: {option_type}")
-        if strike_price:
-            print(f"   Strike: {strike_price}")
+        print(f"\n📡 Fetching expired options for {inst_key} expiry {expiry_date}")
         
         response = requests.get(
-            f"{API_BASE_URL}/option/contract",
+            f"{API_BASE_URL}/expired-instruments/option/contract",
             headers=headers,
             params=params,
             timeout=15
@@ -192,17 +338,29 @@ def fetch_expired_option_contracts(
             data = response.json()
             if data.get("status") == "success":
                 contracts = data.get("data", [])
+                if contracts:
+                    ce_c = sum(1 for c in contracts if c.get('instrument_type') == 'CE')
+                    pe_c = sum(1 for c in contracts if c.get('instrument_type') == 'PE')
+                    print(f"DEBUG RAW API: CE={ce_c}, PE={pe_c} (Total {len(contracts)})")
+                    print(f"DEBUG SAMPLE CONTRACT: {contracts[0]}")
+
+                # Manual filtering if needed
+                if option_type:
+                    contracts = [c for c in contracts if c.get('option_type') == option_type]
+                if strike_price:
+                    contracts = [c for c in contracts if c.get('strike_price') == strike_price]
+                    
                 print(f"✓ Fetched {len(contracts)} contract(s)")
                 return contracts
             else:
                 print(f"✗ API returned error: {data.get('message')}")
                 return []
         else:
-            print(f"✗ HTTP {response.status_code}: {response.text[:200]}")
+            print(f"✗ Failed: {response.status_code} - {response.text[:200]}")
             return []
-    
-    except requests.RequestException as e:
-        print(f"✗ Request error: {e}")
+            
+    except Exception as e:
+        print(f"Error fetching contracts: {e}")
         return []
 
 
@@ -218,11 +376,14 @@ def parse_option_data(contract: Dict[str, Any], underlying_symbol: str, expiry_d
     Returns:
         Parsed option data dictionary
     """
-    tradingsymbol = contract.get("tradingsymbol", "")
+    # API uses 'trading_symbol' but we check both just in case
+    tradingsymbol = contract.get("trading_symbol") or contract.get("tradingsymbol", "")
     
-    # Extract option type and strike from tradingsymbol
-    # Example: NIFTY22JAN23000CE -> extract CE and 23000
-    option_type = "CE" if "CE" in tradingsymbol else "PE"
+    # Extract option type: Prefer explicit field, else parse
+    option_type = contract.get("instrument_type")
+    if not option_type:
+        # Fallback parsing
+        option_type = "CE" if "CE" in tradingsymbol else "PE"
     
     # Try to extract strike price from contract or tradingsymbol
     strike_price = contract.get("strike_price")
@@ -249,10 +410,45 @@ def parse_option_data(contract: Dict[str, Any], underlying_symbol: str, expiry_d
         "tradingsymbol": tradingsymbol,
         "exchange_token": contract.get("exchange_token", ""),
         "exchange": contract.get("exchange", "NFO"),
-        "last_trading_price": None,  # Not provided by this endpoint
-        "settlement_price": None,    # Not provided by this endpoint
-        "open_interest": None,        # Not provided by this endpoint
-        "last_volume": None,          # Not provided by this endpoint
+        "last_trading_price": None,
+        "settlement_price": None,
+        "open_interest": None,
+        "last_volume": None,
+        "fetch_timestamp": int(datetime.now().timestamp())
+    }
+
+
+def parse_future_data(contract: Dict[str, Any], underlying_symbol: str, expiry_date: str) -> Dict[str, Any]:
+    """
+    Parse future contract data from API response.
+    
+    Args:
+        contract: Future Contract data from API
+        underlying_symbol: Underlying symbol
+        expiry_date: Expiry date
+        
+    Returns:
+        Parsed dictionary compatible with store_expired_options
+    """
+    tradingsymbol = contract.get("tradingsymbol", "")
+    
+    # Futures don't have strike or option type (CE/PE) in the same way
+    # We will map them to:
+    # option_type = "FUT"
+    # strike_price = 0.0
+    
+    return {
+        "underlying_symbol": underlying_symbol,
+        "option_type": "FUT",
+        "strike_price": 0.0,
+        "expiry_date": expiry_date,
+        "tradingsymbol": tradingsymbol,
+        "exchange_token": contract.get("exchange_token", ""),
+        "exchange": contract.get("exchange", "NFO"),
+        "last_trading_price": None,
+        "settlement_price": None,
+        "open_interest": None,
+        "last_volume": None,
         "fetch_timestamp": int(datetime.now().timestamp())
     }
 
@@ -413,6 +609,11 @@ def main():
         "--query",
         help="Query stored expired options (example: NIFTY@2025-01-22)"
     )
+    parser.add_argument(
+        "--fetch-futures",
+        action="store_true",
+        help="Also fetch expired future contracts"
+    )
     
     args = parser.parse_args()
     
@@ -423,7 +624,6 @@ def main():
         return
     
     # Initialize database
-    initialize_database()
     ensure_expired_options_table()
     
     # List expiries for single underlying
@@ -448,10 +648,17 @@ def main():
         
         stored = get_stored_expired_options(symbol, exp_date)
         if stored:
-            print(f"\n✓ Found {len(stored)} stored expired options for {symbol}")
-            print_options_summary(stored)
+            # Separate Futures and Options for display
+            futures = [o for o in stored if o['option_type'] == 'FUT']
+            options = [o for o in stored if o['option_type'] != 'FUT']
+            
+            print(f"\n✓ Found {len(stored)} stored expired instruments for {symbol}")
+            if futures:
+                print(f"  - {len(futures)} Future Contracts")
+            if options:
+                print_options_summary(options)
         else:
-            print(f"✗ No stored options found for {symbol}")
+            print(f"✗ No stored instruments found for {symbol}")
         return
     
     # Parse underlyings (comma-separated)
@@ -486,9 +693,10 @@ def main():
     for underlying in underlyings:
         for expiry in expiries_list:
             try:
-                print(f"\n📡 Fetching {underlying} @ {expiry}...")
+                print(f"\n======== {underlying} @ {expiry} ========")
                 
-                # Fetch contracts
+                # 1. Fetch Options
+                print(f"--- Options ---")
                 contracts = fetch_expired_option_contracts(
                     underlying,
                     expiry,
@@ -496,26 +704,38 @@ def main():
                     args.strike
                 )
                 
-                if not contracts:
-                    print(f"   ⚠ No contracts found for {underlying} @ {expiry}")
-                    continue
-                
-                # Parse and store
-                parsed_options = [
-                    parse_option_data(contract, underlying, expiry)
-                    for contract in contracts
-                ]
-                
-                stored_count = store_expired_options(parsed_options)
-                total_count += stored_count
-                
-                # Print summary
-                stored_options = get_stored_expired_options(underlying, expiry)
-                ce_count = sum(1 for o in stored_options if o["option_type"] == "CE")
-                pe_count = sum(1 for o in stored_options if o["option_type"] == "PE")
-                
-                print(f"   ✓ Stored {stored_count} options ({ce_count} CE, {pe_count} PE)")
-            
+                # Parse and store options
+                if contracts:
+                    parsed_options = [
+                        parse_option_data(contract, underlying, expiry)
+                        for contract in contracts
+                    ]
+                    stored_count = store_expired_options(parsed_options)
+                    total_count += stored_count
+                    
+                    stored_db = get_stored_expired_options(underlying, expiry)
+                    ce_count = sum(1 for o in stored_db if o["option_type"] == "CE")
+                    pe_count = sum(1 for o in stored_db if o["option_type"] == "PE")
+                    print(f"   ✓ Stored {stored_count} options ({ce_count} CE, {pe_count} PE)")
+                else:
+                    print(f"   ⚠ No option contracts found")
+
+                # 2. Fetch Futures (if requested)
+                if args.fetch_futures:
+                    print(f"--- Futures ---")
+                    fut_contracts = fetch_expired_future_contracts(underlying, expiry)
+                    
+                    if fut_contracts:
+                        parsed_futures = [
+                            parse_future_data(contract, underlying, expiry)
+                            for contract in fut_contracts
+                        ]
+                        stored_fut = store_expired_options(parsed_futures)
+                        total_count += stored_fut
+                        print(f"   ✓ Stored {stored_fut} future contracts")
+                    else:
+                        print(f"   ⚠ No future contracts found (Futures generally expire monthly)")
+
             except Exception as e:
                 print(f"   ✗ Error: {e}")
                 continue
@@ -532,3 +752,96 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ============================================================================
+# NEW: Historical Candle Support (Applied via User Request)
+# ============================================================================
+
+def fetch_expired_historical_candles(
+    instrument_key: str, 
+    interval: str,
+    from_date: str, 
+    to_date: str
+) -> List[Any]:
+    """
+    Fetch historical candles for an expired instrument.
+    Endpoint: /expired-instruments/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}
+    """
+    try:
+        token = ensure_token_valid()
+    except Exception as e:
+        print(f"Token Error: {e}")
+        return []
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+
+    # API Format: /expired-instruments/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}
+    # Important: Upstox 'to_date' comes BEFORE 'from_date' in path for historical V2
+    url = f"{API_BASE_URL}/expired-instruments/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}"
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=12)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("status") == "success":
+                candles = data.get("data", {}).get("candles", [])
+                if not candles and isinstance(data.get("data"), list):
+                    candles = data.get("data")
+                return candles
+            else:
+                return []
+        else:
+            print(f"Candle fetch failed for {instrument_key}: {response.status_code}")
+            return []
+            
+    except Exception as e:
+        print(f"Error fetching candles: {e}")
+        return []
+
+def store_expired_candles(instrument_key: str, interval: str, candles: List[List[Any]]) -> int:
+    """
+    Store fetched candles into sqlite.
+    Candle format: [timestamp, open, high, low, close, volume, oi]
+    """
+    if not candles:
+        return 0
+        
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    count = 0
+    try:
+        data_to_insert = []
+        for c in candles:
+            # Format: [timestamp_str, open, high, low, close, volume, oi]
+            if len(c) < 7: continue
+            
+            ts = c[0]
+            op = float(c[1])
+            hi = float(c[2])
+            lo = float(c[3])
+            cl = float(c[4])
+            vol = int(c[5])
+            oi = int(c[6])
+            
+            data_to_insert.append((instrument_key, interval, ts, op, hi, lo, cl, vol, oi))
+            
+        cursor.executemany("""
+            INSERT OR IGNORE INTO expired_candles 
+            (instrument_key, interval, timestamp, open, high, low, close, volume, oi)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, data_to_insert)
+        
+        count = cursor.rowcount
+        conn.commit()
+    except Exception as e:
+        print(f"Error storing candles: {e}")
+    finally:
+        conn.close()
+        
+    return count
+
