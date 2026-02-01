@@ -58,9 +58,27 @@ class MarketMoversService:
             
             elif category == 'NSE_FUT':
                 # Futures: Fetch all active futures
-                # Note: This will include all expiries (Near, Next, Far). 
-                # Sorting by % Change usually bubbles up active liquid contracts naturally.
                 query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_FO' AND type_code='FUT'"
+                
+            elif category == 'NSE_FO_EQ':
+                # Stocks (Equity) that have F&O contracts
+                # Logic: Underlying name is first part of F&O symbol (e.g., 'RELIANCE' from 'RELIANCE FUT...')
+                # We use a subquery to filter NSE_EQ instruments whose symbol matches the start of any NSE_FO symbol.
+                # Optimized for SQLite: 
+                query = """
+                SELECT instrument_key, symbol, trading_symbol 
+                FROM instruments 
+                WHERE segment_id='NSE_EQ' 
+                AND symbol IN (
+                    SELECT DISTINCT substr(symbol, 0, instr(symbol, ' ')) 
+                    FROM instruments 
+                    WHERE segment_id='NSE_FO'
+                )
+                """
+                
+            elif category == 'VOLUME_SHOCKERS':
+                 # All NSE Equity for Volume Shocker processing
+                 query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_EQ' AND type_code IN ('EQ', 'BE')"
 
             else:
                 return []
@@ -170,6 +188,20 @@ class MarketMoversService:
         
         if df.empty:
              return {'gainers': [], 'losers': []}
+             
+        # SPECIAL LOGIC FOR VOLUME SHOCKERS
+        if category == 'VOLUME_SHOCKERS':
+            # Sort by Volume (Descending)
+            df_vol = df.sort_values('volume', ascending=False)
+            
+            # For "Gainers" tab -> Show High Volume + Positive Price Action
+            gainers = df_vol[df_vol['pct_change'] >= 0].to_dict('records')
+            
+            # For "Losers" tab -> Show High Volume + Negative Price Action
+            # (Basically selling pressure)
+            losers = df_vol[df_vol['pct_change'] < 0].to_dict('records')
+            
+            return {'gainers': gainers, 'losers': losers}
 
         # Return ALL records sorted properly
         # Frontend will handle pagination

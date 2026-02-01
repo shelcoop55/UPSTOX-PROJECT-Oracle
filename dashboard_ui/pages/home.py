@@ -32,6 +32,8 @@ def render_gainers_losers_widget():
             t_nse_sme = ui.tab('NSE SME')
             t_bse_sme = ui.tab('BSE SME')
             t_nse_fut = ui.tab('NSE FUT')
+            t_fo_eq = ui.tab('NSE F&O EQ')
+            t_vol = ui.tab('Vol Shockers')
         
         # State tracking
         state_tracker = {
@@ -179,6 +181,8 @@ def render_gainers_losers_widget():
             elif val == 'NSE SME': state_tracker['tab'] = 'NSE_SME'
             elif val == 'BSE SME': state_tracker['tab'] = 'BSE_SME'
             elif val == 'NSE FUT': state_tracker['tab'] = 'NSE_FUT'
+            elif val == 'NSE F&O EQ': state_tracker['tab'] = 'NSE_FO_EQ'
+            elif val == 'Vol Shockers': state_tracker['tab'] = 'VOLUME_SHOCKERS'
             else: print(f"Unknown tab: {val}")
             
             await load_active_tab()
