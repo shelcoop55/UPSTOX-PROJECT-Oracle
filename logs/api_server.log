@@ -16206,3 +16206,537 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2026-02-01 17:41:17,045 - auth_manager - INFO - ✅ AuthManager initialized
 2026-02-01 17:41:17,047 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
 2026-02-01 17:41:17,050 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:17,187 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:17,192 - __main__ - INFO - [TraceID: 241f4618] Response: 200
+2026-02-01 17:41:17,192 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:17] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:17,341 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:17,342 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:17,346 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:17,347 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:17,707 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:17,708 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:17,741 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:17,748 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:18,013 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:18,016 - __main__ - INFO - [TraceID: ed0ac77f] Response: 200
+2026-02-01 17:41:18,016 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:18] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:18,027 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:18,029 - __main__ - INFO - [TraceID: 4350b3ae] Response: 200
+2026-02-01 17:41:18,029 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:18] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:19,464 - werkzeug - INFO -  * Detected change in '/Users/prince/Desktop/UPSTOX-project/dashboard_ui/pages/home.py', reloading
+2026-02-01 17:41:19,543 - werkzeug - INFO -  * Restarting with stat
+2026-02-01 17:41:20,025 - __main__ - INFO - ✅ All blueprints registered successfully
+2026-02-01 17:41:20,054 - werkzeug - WARNING -  * Debugger is active!
+2026-02-01 17:41:20,065 - werkzeug - INFO -  * Debugger PIN: 100-159-323
+2026-02-01 17:41:20,077 - __main__ - INFO - [TraceID: 0c5f6450] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:20,078 - __main__ - INFO - [TraceID: 9719ca7e] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:20,078 - __main__ - INFO - [TraceID: 752d3d73] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:20,079 - __main__ - INFO - [TraceID: 9ae9e3d8] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:20,092 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:20,092 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:20,092 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:20,093 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:20,093 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:20,093 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:20,093 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:20,093 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:20,095 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:20,095 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:20,095 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:20,095 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:20,098 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,098 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,099 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,099 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,425 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:20,428 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,505 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:20,507 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,509 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:20,521 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,530 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:20,534 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,744 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:20,745 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,884 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:20,887 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:20,929 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:20,932 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:21,071 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:21,074 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:21,147 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:21,150 - __main__ - INFO - [TraceID: 9ae9e3d8] Response: 200
+2026-02-01 17:41:21,150 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:21] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:21,187 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:21,191 - __main__ - INFO - [TraceID: 9719ca7e] Response: 200
+2026-02-01 17:41:21,192 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:21] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:21,395 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:21,402 - __main__ - INFO - [TraceID: 752d3d73] Response: 200
+2026-02-01 17:41:21,403 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:21] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:21,467 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:21,474 - __main__ - INFO - [TraceID: 0c5f6450] Response: 200
+2026-02-01 17:41:21,474 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:21] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:30,253 - werkzeug - INFO -  * Detected change in '/Users/prince/Desktop/UPSTOX-project/dashboard_ui/pages/home.py', reloading
+2026-02-01 17:41:30,318 - werkzeug - INFO -  * Restarting with stat
+2026-02-01 17:41:30,783 - __main__ - INFO - ✅ All blueprints registered successfully
+2026-02-01 17:41:30,805 - werkzeug - WARNING -  * Debugger is active!
+2026-02-01 17:41:30,819 - werkzeug - INFO -  * Debugger PIN: 100-159-323
+2026-02-01 17:41:31,033 - __main__ - INFO - [TraceID: 5e68946b] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:31,044 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:31,044 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:31,048 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:31,050 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,132 - __main__ - INFO - [TraceID: 97f998fb] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:31,133 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:31,133 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:31,134 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:31,135 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,495 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:31,496 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,562 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:31,563 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,825 - __main__ - INFO - [TraceID: 8e1cb30b] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:31,826 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:31,826 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:31,827 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:31,827 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,926 - __main__ - INFO - [TraceID: 0886d1f2] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:41:31,927 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:41:31,927 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:41:31,928 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:41:31,929 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:31,951 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:31,952 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,047 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:32,060 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,231 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:32,233 - __main__ - INFO - [TraceID: 5e68946b] Response: 200
+2026-02-01 17:41:32,234 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:32] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:32,305 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:32,312 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,330 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:41:32,337 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,416 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:32,419 - __main__ - INFO - [TraceID: 97f998fb] Response: 200
+2026-02-01 17:41:32,419 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:32] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:32,618 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:32,619 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,692 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:41:32,698 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:41:32,903 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:32,907 - __main__ - INFO - [TraceID: 0886d1f2] Response: 200
+2026-02-01 17:41:32,907 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:32] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:41:32,975 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:41:32,980 - __main__ - INFO - [TraceID: 8e1cb30b] Response: 200
+2026-02-01 17:41:32,980 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:41:32] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:01,047 - __main__ - INFO - [TraceID: 40ae154c] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:01,053 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:01,053 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:01,055 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:01,057 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:01,565 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:01,570 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:01,828 - __main__ - INFO - [TraceID: 84faaee8] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:01,830 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:01,830 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:01,832 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:01,834 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:02,106 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:02,109 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:02,334 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:02,335 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:02,559 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:02,564 - __main__ - INFO - [TraceID: 40ae154c] Response: 200
+2026-02-01 17:42:02,564 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:02] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:02,652 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:02,653 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:02,957 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:02,961 - __main__ - INFO - [TraceID: 84faaee8] Response: 200
+2026-02-01 17:42:02,961 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:02] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:31,041 - __main__ - INFO - [TraceID: fc66fd13] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:31,046 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:31,046 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:31,047 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:31,048 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:31,351 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:31,352 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:31,628 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:31,629 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:31,827 - __main__ - INFO - [TraceID: 4c102845] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:31,828 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:31,828 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:31,829 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:31,830 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:32,020 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:32,115 - __main__ - INFO - [TraceID: fc66fd13] Response: 200
+2026-02-01 17:42:32,124 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:32] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:32,489 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:32,491 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:32,779 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:32,784 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:33,411 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:33,414 - __main__ - INFO - [TraceID: 4c102845] Response: 200
+2026-02-01 17:42:33,415 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:33] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:57,939 - __main__ - INFO - [TraceID: 3777f3b2] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:57,941 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:57,941 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:57,942 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:57,945 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:57,979 - __main__ - INFO - [TraceID: 803b24fb] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:57,983 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:57,983 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:57,985 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:57,986 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,033 - __main__ - INFO - [TraceID: 5a03c38c] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:58,034 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:58,034 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:58,035 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:58,035 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,078 - __main__ - INFO - [TraceID: 2d7df73c] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:42:58,079 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:42:58,079 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:42:58,080 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:42:58,081 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,351 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:58,355 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,388 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:58,390 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,433 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:58,436 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,573 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:42:58,574 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,869 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:58,871 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,881 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:58,882 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,907 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:58,920 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:58,988 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:42:58,989 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:42:59,256 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:59,261 - __main__ - INFO - [TraceID: 5a03c38c] Response: 200
+2026-02-01 17:42:59,262 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:59] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:59,279 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:59,290 - __main__ - INFO - [TraceID: 3777f3b2] Response: 200
+2026-02-01 17:42:59,290 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:59] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:59,310 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:59,314 - __main__ - INFO - [TraceID: 803b24fb] Response: 200
+2026-02-01 17:42:59,314 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:59] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:42:59,378 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:42:59,385 - __main__ - INFO - [TraceID: 2d7df73c] Response: 200
+2026-02-01 17:42:59,385 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:42:59] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:21,063 - __main__ - INFO - [TraceID: 052d0364] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:21,075 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:21,075 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:21,085 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:21,098 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,129 - __main__ - INFO - [TraceID: d867ae5d] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:21,130 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:21,130 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:21,132 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:21,135 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,145 - __main__ - INFO - [TraceID: c8680295] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:21,149 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:21,149 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:21,151 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:21,153 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,233 - __main__ - INFO - [TraceID: d2ce225d] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:21,235 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:21,235 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:21,236 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:21,237 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,418 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:21,419 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,536 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:21,538 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,610 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:21,611 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,768 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:21,771 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,886 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:21,888 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:21,943 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:21,945 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:22,030 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:22,033 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:22,063 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:22,065 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:22,199 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:22,207 - __main__ - INFO - [TraceID: d867ae5d] Response: 200
+2026-02-01 17:43:22,207 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:22,309 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:22,312 - __main__ - INFO - [TraceID: 052d0364] Response: 200
+2026-02-01 17:43:22,312 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:22,329 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:22,332 - __main__ - INFO - [TraceID: c8680295] Response: 200
+2026-02-01 17:43:22,332 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:22,345 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:22,351 - __main__ - INFO - [TraceID: d2ce225d] Response: 200
+2026-02-01 17:43:22,351 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:51,084 - __main__ - INFO - [TraceID: 9abddbd6] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:51,088 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:51,088 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:51,103 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:51,105 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:51,131 - __main__ - INFO - [TraceID: b6aac707] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:51,132 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:51,132 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:51,133 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:51,134 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:51,471 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:51,476 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:51,727 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:43:51,731 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:51,859 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:51,862 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:52,029 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:43:52,034 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:52,275 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:52,288 - __main__ - INFO - [TraceID: b6aac707] Response: 200
+2026-02-01 17:43:52,289 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:52] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:52,671 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:43:52,674 - __main__ - INFO - [TraceID: 9abddbd6] Response: 200
+2026-02-01 17:43:52,675 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:43:52] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:43:57,836 - werkzeug - INFO -  * Detected change in '/Users/prince/Desktop/UPSTOX-project/dashboard_ui/services/movers.py', reloading
+2026-02-01 17:43:58,113 - werkzeug - INFO -  * Restarting with stat
+2026-02-01 17:43:58,787 - __main__ - INFO - ✅ All blueprints registered successfully
+2026-02-01 17:43:58,816 - werkzeug - WARNING -  * Debugger is active!
+2026-02-01 17:43:58,825 - werkzeug - INFO -  * Debugger PIN: 100-159-323
+2026-02-01 17:43:59,930 - __main__ - INFO - [TraceID: 8f48a654] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:59,931 - __main__ - INFO - [TraceID: 60079e28] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:43:59,944 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:59,944 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:59,949 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:59,950 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:43:59,950 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:43:59,952 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:43:59,952 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:43:59,952 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,034 - __main__ - INFO - [TraceID: 8c01e668] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:00,035 - __main__ - INFO - [TraceID: 8e0939ad] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:00,037 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:00,037 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:00,037 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:00,037 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:00,040 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:00,041 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:00,043 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,043 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,271 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:00,273 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,314 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:00,317 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,440 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:00,442 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,514 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:00,518 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,577 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:00,580 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,808 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:00,813 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,894 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:00,896 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,935 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:00,936 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:00,954 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:00,959 - __main__ - INFO - [TraceID: 60079e28] Response: 200
+2026-02-01 17:44:00,959 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:00] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:01,218 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:01,228 - __main__ - INFO - [TraceID: 8f48a654] Response: 200
+2026-02-01 17:44:01,229 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:01] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:01,268 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:01,279 - __main__ - INFO - [TraceID: 8c01e668] Response: 200
+2026-02-01 17:44:01,290 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:01] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:01,302 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:01,310 - __main__ - INFO - [TraceID: 8e0939ad] Response: 200
+2026-02-01 17:44:01,322 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:01] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:03,924 - werkzeug - INFO -  * Detected change in '/Users/prince/Desktop/UPSTOX-project/dashboard_ui/pages/home.py', reloading
+2026-02-01 17:44:04,016 - werkzeug - INFO -  * Restarting with stat
+2026-02-01 17:44:04,382 - __main__ - INFO - ✅ All blueprints registered successfully
+2026-02-01 17:44:04,399 - werkzeug - WARNING -  * Debugger is active!
+2026-02-01 17:44:04,404 - werkzeug - INFO -  * Debugger PIN: 100-159-323
+2026-02-01 17:44:04,893 - __main__ - INFO - [TraceID: 20865371] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:04,905 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:04,905 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:04,908 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:04,909 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:04,994 - __main__ - INFO - [TraceID: 206ed0f3] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:04,995 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:04,996 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:04,997 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:04,998 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,237 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:05,241 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,478 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:05,481 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,676 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:05,681 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,864 - __main__ - INFO - [TraceID: 288ad752] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:05,867 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:05,867 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:05,868 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:05,869 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,899 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:05,907 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:05,969 - __main__ - INFO - [TraceID: af9b9df1] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:05,970 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:05,970 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:05,971 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:05,971 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:06,172 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:06,174 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:06,191 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:06,197 - __main__ - INFO - [TraceID: 20865371] Response: 200
+2026-02-01 17:44:06,197 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:06] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:06,240 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:06,241 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:06,292 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:06,297 - __main__ - INFO - [TraceID: 206ed0f3] Response: 200
+2026-02-01 17:44:06,297 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:06] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:06,490 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:06,492 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:06,512 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:06,514 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:06,804 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:06,811 - __main__ - INFO - [TraceID: 288ad752] Response: 200
+2026-02-01 17:44:06,811 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:06] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:06,891 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:06,898 - __main__ - INFO - [TraceID: af9b9df1] Response: 200
+2026-02-01 17:44:06,898 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:06] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:10,502 - werkzeug - INFO -  * Detected change in '/Users/prince/Desktop/UPSTOX-project/dashboard_ui/pages/home.py', reloading
+2026-02-01 17:44:10,574 - werkzeug - INFO -  * Restarting with stat
+2026-02-01 17:44:10,984 - __main__ - INFO - ✅ All blueprints registered successfully
+2026-02-01 17:44:11,001 - werkzeug - WARNING -  * Debugger is active!
+2026-02-01 17:44:11,006 - werkzeug - INFO -  * Debugger PIN: 100-159-323
+2026-02-01 17:44:11,712 - __main__ - INFO - [TraceID: d569d8bd] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:11,723 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:11,723 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:11,726 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:11,729 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:11,811 - __main__ - INFO - [TraceID: 81072246] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:11,812 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:11,812 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:11,813 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:11,815 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:11,852 - __main__ - INFO - [TraceID: 404548ed] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:11,853 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:11,853 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:11,854 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:11,854 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:11,952 - __main__ - INFO - [TraceID: baea70e0] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:11,953 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:11,953 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:11,953 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:11,954 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,039 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:12,040 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,126 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:12,128 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,227 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:12,230 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,431 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:12,434 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,477 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:12,479 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:12,482 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,484 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,623 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:12,628 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:12,756 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:12,764 - __main__ - INFO - [TraceID: 81072246] Response: 200
+2026-02-01 17:44:12,764 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:12] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:12,773 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:12,777 - __main__ - INFO - [TraceID: d569d8bd] Response: 200
+2026-02-01 17:44:12,777 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:12] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:13,022 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:13,027 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:13,057 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:13,062 - __main__ - INFO - [TraceID: baea70e0] Response: 200
+2026-02-01 17:44:13,063 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:13] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:13,417 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:13,443 - __main__ - INFO - [TraceID: 404548ed] Response: 200
+2026-02-01 17:44:13,447 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:13] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:41,722 - __main__ - INFO - [TraceID: 42bc2453] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:41,728 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:41,728 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:41,730 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:41,732 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:41,856 - __main__ - INFO - [TraceID: eeea22b6] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:44:41,858 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:44:41,858 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:44:41,860 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:44:41,862 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:42,340 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:42,341 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:44:42,347 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:42,347 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:42,749 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:42,750 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:44:42,754 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:42,754 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:44:43,036 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:43,038 - __main__ - INFO - [TraceID: eeea22b6] Response: 200
+2026-02-01 17:44:43,039 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:43] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:44:43,047 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:44:43,049 - __main__ - INFO - [TraceID: 42bc2453] Response: 200
+2026-02-01 17:44:43,049 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:44:43] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:11,727 - __main__ - INFO - [TraceID: 61d344ba] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:11,733 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:11,733 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:11,735 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:11,737 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:11,856 - __main__ - INFO - [TraceID: 5307cbe6] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:11,859 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:11,859 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:11,861 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:11,863 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:12,137 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:12,142 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:12,165 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:12,167 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:12,749 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:12,749 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:12,753 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:12,754 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:13,263 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:13,263 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:13,272 - __main__ - INFO - [TraceID: 5307cbe6] Response: 200
+2026-02-01 17:45:13,273 - __main__ - INFO - [TraceID: 61d344ba] Response: 200
+2026-02-01 17:45:13,273 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:13] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:13,274 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:13] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:21,019 - __main__ - INFO - [TraceID: b3eda979] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:21,028 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:21,028 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:21,030 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:21,031 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:21,150 - __main__ - INFO - [TraceID: e86007e2] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:21,157 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:21,157 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:21,159 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:21,160 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:21,472 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:21,473 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:21,700 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:21,701 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:21,909 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:21,910 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:22,210 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:22,216 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:22,217 - __main__ - INFO - [TraceID: b3eda979] Response: 200
+2026-02-01 17:45:22,218 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:22,219 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:22,681 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:22,689 - __main__ - INFO - [TraceID: e86007e2] Response: 200
+2026-02-01 17:45:22,690 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:22] "GET /api/portfolio HTTP/1.1" 200 -
+2026-02-01 17:45:41,729 - __main__ - INFO - [TraceID: 0f37f8fc] GET /api/portfolio - Client: 127.0.0.1
+2026-02-01 17:45:41,739 - auth_manager - DEBUG - Database initialized
+2026-02-01 17:45:41,739 - auth_manager - INFO - ✅ AuthManager initialized
+2026-02-01 17:45:41,742 - auth_manager - DEBUG - ✅ Valid token retrieved for: default
+2026-02-01 17:45:41,745 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:42,073 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/profile HTTP/1.1" 200 None
+2026-02-01 17:45:42,076 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:42,552 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/portfolio/short-term-positions HTTP/1.1" 200 None
+2026-02-01 17:45:42,555 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.upstox.com:443
+2026-02-01 17:45:43,058 - urllib3.connectionpool - DEBUG - https://api.upstox.com:443 "GET /v2/user/get-funds-and-margin HTTP/1.1" 200 None
+2026-02-01 17:45:43,066 - __main__ - INFO - [TraceID: 0f37f8fc] Response: 200
+2026-02-01 17:45:43,067 - werkzeug - INFO - 127.0.0.1 - - [01/Feb/2026 17:45:43] "GET /api/portfolio HTTP/1.1" 200 -

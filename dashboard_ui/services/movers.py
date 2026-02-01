@@ -56,6 +56,12 @@ class MarketMoversService:
             elif category == 'BSE_SME':
                 query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='BSE_EQ' AND type_code IN ('M', 'MT')"
             
+            elif category == 'NSE_FUT':
+                # Futures: Fetch all active futures
+                # Note: This will include all expiries (Near, Next, Far). 
+                # Sorting by % Change usually bubbles up active liquid contracts naturally.
+                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_FO' AND type_code='FUT'"
+
             else:
                 return []
 
