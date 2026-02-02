@@ -7,19 +7,15 @@ token = "eyJ0eXAiOiJKV1QiLCJrZXlfaWQiOiJza192MS4wIiwiYWxnIjoiSFMyNTYifQ.eyJzdWIi
 expires_in = 86400  # Default 24 hours
 
 # Add scripts to path if needed
-sys.path.append(os.path.join(os.getcwd(), 'scripts'))
+sys.path.append(os.path.join(os.getcwd(), "scripts"))
 
 try:
     auth = AuthManager()
-    token_data = {
-        "access_token": token,
-        "refresh_token": "",
-        "expires_in": expires_in
-    }
-    
+    token_data = {"access_token": token, "refresh_token": "", "expires_in": expires_in}
+
     auth.save_token("default", token_data)
     print("✅ Token stored successfully using AuthManager!")
-    
+
     # Verify
     saved_token = auth.get_valid_token("default")
     if saved_token == token:

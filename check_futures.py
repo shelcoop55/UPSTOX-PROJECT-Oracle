@@ -20,8 +20,8 @@ print(df.head())
 
 # unique symbols
 print(f"Unique Symbols: {df['symbol'].nunique()}")
-print(df['symbol'].unique()[:10])
+print(df["symbol"].unique()[:10])
 
 # Check expirations
 print("\nExpirations sample:")
-print(df['expiry'].dropna().sort_values().unique()[:5])
+print(df["expiry"].dropna().sort_values().unique()[:5])

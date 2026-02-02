@@ -10,7 +10,9 @@ for row in cursor.fetchall():
     print(row)
 
 print("\n--- NSE_FO Type Codes ---")
-cursor.execute("SELECT instrument_type, count(*) FROM exchange_listings WHERE segment='NSE_FO' GROUP BY instrument_type")
+cursor.execute(
+    "SELECT instrument_type, count(*) FROM exchange_listings WHERE segment='NSE_FO' GROUP BY instrument_type"
+)
 for row in cursor.fetchall():
     print(row)
 
