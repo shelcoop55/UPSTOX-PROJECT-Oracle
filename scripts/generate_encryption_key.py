@@ -37,9 +37,7 @@ def generate_key():
 
     print("✅ Encryption key generated and saved to .env")
     print(f"🔑 Key: {key.decode()}")
-    print(
-        "\n⚠️  Keep this key secure - losing it means losing access to stored tokens!"
-    )
+    print("\n⚠️  Keep this key secure - losing it means losing access to stored tokens!")
 
 
 if __name__ == "__main__":

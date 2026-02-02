@@ -352,9 +352,9 @@ class RiskManager:
         return {
             "daily_pnl": daily_pnl,
             "loss_limit": self.max_daily_loss,
-            "loss_percentage": (abs(daily_pnl) / self.max_daily_loss * 100)
-            if daily_pnl < 0
-            else 0,
+            "loss_percentage": (
+                (abs(daily_pnl) / self.max_daily_loss * 100) if daily_pnl < 0 else 0
+            ),
             "breached": loss_breached,
             "circuit_breaker_active": self.circuit_breaker_triggered or active_breaker,
         }
@@ -648,9 +648,11 @@ class RiskManager:
             "max_positions": 10,  # TODO: Make configurable
             "total_position_value": total_position_value,
             "max_position_value": self.max_position_size,
-            "utilization_pct": (total_position_value / self.max_position_size * 100)
-            if self.max_position_size > 0
-            else 0,
+            "utilization_pct": (
+                (total_position_value / self.max_position_size * 100)
+                if self.max_position_size > 0
+                else 0
+            ),
         }
 
 

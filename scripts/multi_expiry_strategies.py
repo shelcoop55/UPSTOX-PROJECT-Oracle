@@ -528,9 +528,11 @@ class MultiExpiryBacktester:
                 "avg_daily_pnl": np.mean(pnls),
                 "max_pnl": max(pnls),
                 "min_pnl": min(pnls),
-                "sharpe_ratio": np.mean(pnls) / np.std(pnls) * np.sqrt(252)
-                if np.std(pnls) > 0
-                else 0,
+                "sharpe_ratio": (
+                    np.mean(pnls) / np.std(pnls) * np.sqrt(252)
+                    if np.std(pnls) > 0
+                    else 0
+                ),
                 "num_rolls": len(self.roller.roll_history),
                 "total_roll_cost": sum(
                     r["roll_cost"] for r in self.roller.roll_history

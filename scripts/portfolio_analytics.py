@@ -236,9 +236,9 @@ class PortfolioAnalytics:
             "avg_loss": float(avg_loss),
             "total_profit": float(total_wins),
             "total_loss": float(total_losses),
-            "profit_factor": float(profit_factor)
-            if profit_factor != float("inf")
-            else 999,
+            "profit_factor": (
+                float(profit_factor) if profit_factor != float("inf") else 999
+            ),
         }
 
     def get_performance_summary(self, start_date: str, end_date: str) -> Dict:
@@ -288,18 +288,20 @@ class PortfolioAnalytics:
                 "initial_capital": equity_values[0] if equity_values else 100000,
                 "final_capital": equity_values[-1] if equity_values else 100000,
                 "total_return": total_return,
-                "total_pnl": equity_values[-1] - equity_values[0]
-                if equity_values
-                else 0,
+                "total_pnl": (
+                    equity_values[-1] - equity_values[0] if equity_values else 0
+                ),
                 "sharpe_ratio": sharpe,
                 "sortino_ratio": sortino,
                 "max_drawdown": max_dd,
                 "win_stats": win_stats,
                 "equity_curve": equity_curve,
                 "num_days": len(equity_curve),
-                "avg_daily_pnl": np.mean([e.get("pnl", 0) for e in equity_curve])
-                if equity_curve
-                else 0,
+                "avg_daily_pnl": (
+                    np.mean([e.get("pnl", 0) for e in equity_curve])
+                    if equity_curve
+                    else 0
+                ),
             }
 
         except Exception as e:

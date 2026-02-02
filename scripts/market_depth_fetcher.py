@@ -164,7 +164,9 @@ class MarketDepthFetcher:
                     print(f"❌ No depth data for {symbol}")
                     return None
             else:
-                print(f"❌ Failed to get market depth: {response.json().get('message')}")
+                print(
+                    f"❌ Failed to get market depth: {response.json().get('message')}"
+                )
                 return None
 
         except Exception as e:

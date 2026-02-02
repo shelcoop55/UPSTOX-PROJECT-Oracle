@@ -52,9 +52,7 @@ try:
         candle_count = cur.fetchone()[0]
         print(f"   ✅ Existing candles: {candle_count}")
     except:
-        print(
-            f"   ℹ️  Candles table doesn't exist yet (will be created on first fetch)"
-        )
+        print(f"   ℹ️  Candles table doesn't exist yet (will be created on first fetch)")
 
     conn.close()
 except Exception as e:

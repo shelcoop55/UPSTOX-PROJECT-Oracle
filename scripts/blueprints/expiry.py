@@ -39,9 +39,9 @@ def roll_expiry():
 
         # Create current leg
         current_leg = MultiExpiryLeg(
-            option_type=OptionType.CALL
-            if data["option_type"] == "CALL"
-            else OptionType.PUT,
+            option_type=(
+                OptionType.CALL if data["option_type"] == "CALL" else OptionType.PUT
+            ),
             action=ActionType.BUY if data["action"] == "BUY" else ActionType.SELL,
             strike=data["strike"],
             expiry_date=data["current_expiry"],
@@ -71,9 +71,11 @@ def roll_expiry():
                     "premium": new_leg.premium,
                     "qty": new_leg.qty,
                 },
-                "recommendation": "Roll successful"
-                if roll_details["roll_cost"] < 0
-                else "Roll at credit",
+                "recommendation": (
+                    "Roll successful"
+                    if roll_details["roll_cost"] < 0
+                    else "Roll at credit"
+                ),
             }
         )
     except Exception as e:

@@ -5,13 +5,13 @@ Symbol Resolver — Find stocks by SQL filters or direct listing.
 Usage:
   # Find by direct symbol list
   symbols = resolve_symbols(symbols=['RELIANCE', 'INFY', 'TCS'])
-  
+
   # Find by segment
   symbols = resolve_symbols(segment='NSE_EQ', instrument_type=['EQ', 'BE'])
-  
+
   # Find by SQL filter
   symbols = resolve_symbols(sql_filter="WHERE has_fno=1 AND instrument_type='EQ' LIMIT 10")
-  
+
   # Find by criteria (keyword search)
   symbols = resolve_symbols(criteria={'segment': 'NSE_EQ', 'instrument_type': 'EQ', 'has_fno': 1})
 """

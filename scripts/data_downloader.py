@@ -302,9 +302,11 @@ class StockDownloader(BaseDownloader):
                         "close": float(close),
                         "volume": int(volume),
                         "open_interest": int(oi) if oi else 0,
-                        "symbol": symbol.upper().split("|")[-1]
-                        if "|" in symbol
-                        else symbol.upper(),
+                        "symbol": (
+                            symbol.upper().split("|")[-1]
+                            if "|" in symbol
+                            else symbol.upper()
+                        ),
                     }
                 )
 

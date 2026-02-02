@@ -148,15 +148,17 @@ class HoldingsManager:
                         * holding.get("last_price", 0),
                         "pnl": holding.get("pnl", 0),
                         "pnl_percentage": (
-                            holding.get("pnl", 0)
-                            / (
-                                holding.get("average_price", 1)
-                                * holding.get("quantity", 1)
+                            (
+                                holding.get("pnl", 0)
+                                / (
+                                    holding.get("average_price", 1)
+                                    * holding.get("quantity", 1)
+                                )
                             )
-                        )
-                        * 100
-                        if holding.get("quantity", 0) > 0
-                        else 0,
+                            * 100
+                            if holding.get("quantity", 0) > 0
+                            else 0
+                        ),
                         "product": holding.get("product", "CNC"),
                         "collateral_qty": holding.get("collateral_quantity", 0),
                         "collateral_type": holding.get("collateral_type", ""),

@@ -16,22 +16,22 @@ Supports:
 Usage:
     # Single underlying, single expiry
     python expired_options_fetcher.py --underlying NIFTY --expiry 2025-01-22
-    
+
     # Multiple expiries for one underlying
     python expired_options_fetcher.py --underlying NIFTY --expiry 2025-01-22,2025-02-19,2025-03-26
-    
+
     # Multiple underlyings, single expiry
     python expired_options_fetcher.py --underlying NIFTY,BANKNIFTY,INFY --expiry 2025-01-22
-    
+
     # Multiple underlyings, all available expiries (batch)
     python expired_options_fetcher.py --underlying NIFTY,BANKNIFTY --batch
-    
+
     # Filter by option type
     python expired_options_fetcher.py --underlying NIFTY --batch --option-type CE
-    
+
     # List available expiries
     python expired_options_fetcher.py --underlying NIFTY,BANKNIFTY --list-expiries
-    
+
     # Query stored options
     python expired_options_fetcher.py --query NIFTY@2025-01-22
 """

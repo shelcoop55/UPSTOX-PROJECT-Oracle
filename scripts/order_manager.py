@@ -346,7 +346,9 @@ class OrderManager:
                 self._update_order_status(order_id, order_data.get("status"))
                 return order_data
             else:
-                print(f"❌ Failed to get order status: {response.json().get('message')}")
+                print(
+                    f"❌ Failed to get order status: {response.json().get('message')}"
+                )
                 return None
 
         except Exception as e:

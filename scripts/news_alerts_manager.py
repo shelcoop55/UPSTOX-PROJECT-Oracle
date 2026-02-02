@@ -444,17 +444,13 @@ class NewsAlertsManager:
             pos, neg, neu = (
                 (1, 0, 0)
                 if sentiment == "POSITIVE"
-                else (0, 1, 0)
-                if sentiment == "NEGATIVE"
-                else (0, 0, 1)
+                else (0, 1, 0) if sentiment == "NEGATIVE" else (0, 0, 1)
             )
             total = 1
             avg_score = (
                 1.0
                 if sentiment == "POSITIVE"
-                else -1.0
-                if sentiment == "NEGATIVE"
-                else 0.0
+                else -1.0 if sentiment == "NEGATIVE" else 0.0
             )
 
             cursor.execute(
@@ -566,12 +562,12 @@ class NewsAlertsManager:
                 "published_at": (current_time - timedelta(minutes=i * 15)).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 ),
-                "category": "EARNINGS"
-                if "earnings" in template["headline"]
-                else "GENERAL",
-                "priority": "HIGH"
-                if template["sentiment_bias"] == "NEGATIVE"
-                else "MEDIUM",
+                "category": (
+                    "EARNINGS" if "earnings" in template["headline"] else "GENERAL"
+                ),
+                "priority": (
+                    "HIGH" if template["sentiment_bias"] == "NEGATIVE" else "MEDIUM"
+                ),
                 "url": f"https://example.com/news/{i}",
             }
 
@@ -914,21 +910,21 @@ class NewsAlertsManager:
                 "positive_count": total_positive,
                 "negative_count": total_negative,
                 "neutral_count": total_neutral,
-                "positive_pct": (total_positive / total_articles * 100)
-                if total_articles
-                else 0,
-                "negative_pct": (total_negative / total_articles * 100)
-                if total_articles
-                else 0,
-                "neutral_pct": (total_neutral / total_articles * 100)
-                if total_articles
-                else 0,
+                "positive_pct": (
+                    (total_positive / total_articles * 100) if total_articles else 0
+                ),
+                "negative_pct": (
+                    (total_negative / total_articles * 100) if total_articles else 0
+                ),
+                "neutral_pct": (
+                    (total_neutral / total_articles * 100) if total_articles else 0
+                ),
                 "overall_sentiment": overall_sentiment,
-                "sentiment_rating": "BULLISH"
-                if overall_sentiment > 0.2
-                else "BEARISH"
-                if overall_sentiment < -0.2
-                else "NEUTRAL",
+                "sentiment_rating": (
+                    "BULLISH"
+                    if overall_sentiment > 0.2
+                    else "BEARISH" if overall_sentiment < -0.2 else "NEUTRAL"
+                ),
                 "daily_breakdown": daily_sentiment,
             }
         else:
@@ -1010,9 +1006,9 @@ class NewsAlertsManager:
                             sentiment_emoji = (
                                 "🟢"
                                 if article["sentiment"] == "POSITIVE"
-                                else "🔴"
-                                if article["sentiment"] == "NEGATIVE"
-                                else "⚪"
+                                else (
+                                    "🔴" if article["sentiment"] == "NEGATIVE" else "⚪"
+                                )
                             )
                             print(
                                 f"{sentiment_emoji} [{article.get('published_at')}] {article.get('headline')}"
@@ -1050,9 +1046,7 @@ class NewsAlertsManager:
             sentiment_emoji = (
                 "🟢"
                 if sentiment == "POSITIVE"
-                else "🔴"
-                if sentiment == "NEGATIVE"
-                else "⚪"
+                else "🔴" if sentiment == "NEGATIVE" else "⚪"
             )
 
             print(f"\n{i}. {sentiment_emoji} {article.get('headline')}")

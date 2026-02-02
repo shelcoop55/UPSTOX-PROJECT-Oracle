@@ -84,9 +84,11 @@ def historical_options_page():
                 )
                 ui.switch(
                     "Show Logs",
-                    on_change=lambda e: log_view.classes(remove="hidden")
-                    if e.value
-                    else log_view.classes(add="hidden"),
+                    on_change=lambda e: (
+                        log_view.classes(remove="hidden")
+                        if e.value
+                        else log_view.classes(add="hidden")
+                    ),
                 )
 
             with ui.row().classes("items-end gap-4"):
@@ -531,9 +533,11 @@ def historical_options_page():
                                         "expiry": expiry,
                                         "status": "success",
                                         "count": count,
-                                        "candles": contracts_with_candles
-                                        if chk_download_candles.value
-                                        else "N/A",
+                                        "candles": (
+                                            contracts_with_candles
+                                            if chk_download_candles.value
+                                            else "N/A"
+                                        ),
                                     }
                                 )
 

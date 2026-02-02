@@ -446,12 +446,16 @@ class OptionsChainService:
                     "strike": strike,
                     "call": {
                         "ltp": round(call_ltp, 2),
-                        "volume": int(10000 * (1 - abs(moneyness)))
-                        if abs(moneyness) < 0.1
-                        else 1000,
-                        "oi": int(50000 * (1 - abs(moneyness)))
-                        if abs(moneyness) < 0.1
-                        else 5000,
+                        "volume": (
+                            int(10000 * (1 - abs(moneyness)))
+                            if abs(moneyness) < 0.1
+                            else 1000
+                        ),
+                        "oi": (
+                            int(50000 * (1 - abs(moneyness)))
+                            if abs(moneyness) < 0.1
+                            else 5000
+                        ),
                         "iv": round(iv, 2),
                         "delta": round(call_delta, 3),
                         "gamma": round(gamma, 3),
@@ -462,12 +466,16 @@ class OptionsChainService:
                     },
                     "put": {
                         "ltp": round(put_ltp, 2),
-                        "volume": int(10000 * (1 - abs(moneyness)))
-                        if abs(moneyness) < 0.1
-                        else 1000,
-                        "oi": int(50000 * (1 - abs(moneyness)))
-                        if abs(moneyness) < 0.1
-                        else 5000,
+                        "volume": (
+                            int(10000 * (1 - abs(moneyness)))
+                            if abs(moneyness) < 0.1
+                            else 1000
+                        ),
+                        "oi": (
+                            int(50000 * (1 - abs(moneyness)))
+                            if abs(moneyness) < 0.1
+                            else 5000
+                        ),
                         "iv": round(iv, 2),
                         "delta": round(put_delta, 3),
                         "gamma": round(gamma, 3),
