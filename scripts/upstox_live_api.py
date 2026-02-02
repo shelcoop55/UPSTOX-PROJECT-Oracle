@@ -334,7 +334,7 @@ class UpstoxLiveAPI:
             # Optimized Query: Check exact matches first
             cursor.execute('''
                 SELECT instrument_key 
-                FROM instruments 
+                FROM exchange_listings 
                 WHERE symbol = ? 
                    OR trading_symbol = ? 
                 LIMIT 1
@@ -348,8 +348,8 @@ class UpstoxLiveAPI:
             # Fallback: Try "NSE_EQ" segment if not specified
             cursor.execute('''
                 SELECT instrument_key 
-                FROM instruments 
-                WHERE symbol = ? AND exchange_token LIKE 'NSE_EQ%'
+                FROM exchange_listings 
+                WHERE symbol = ? AND instrument_type IN ('EQ', 'BE')
                 LIMIT 1
             ''', (target,))
             row = cursor.fetchone()

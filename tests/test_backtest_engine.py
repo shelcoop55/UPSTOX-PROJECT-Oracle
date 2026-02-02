@@ -9,14 +9,16 @@ import os
 import sys
 import unittest
 import numpy as np
+import pandas as pd
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scripts.db_manager import initialize_database
+from tests.test_utils import initialize_database
 from scripts.backtest_engine import (
-    load_candle_data, SMAStrategy, RSIStrategy, BacktestResult
+    BacktestEngine, SMAStrategy, RSIStrategy, BacktestResult
 )
+
 
 
 class TestCandleDataLoading(unittest.TestCase):
@@ -33,21 +35,19 @@ class TestCandleDataLoading(unittest.TestCase):
         timeframe = "1d"
         
         try:
-            candles = load_candle_data(symbol, timeframe)
+            engine = BacktestEngine()
+            candles = engine.load_candle_data(symbol, timeframe)
             
-            self.assertIsInstance(candles, dict)
+            self.assertIsInstance(candles, pd.DataFrame)
             
-            if len(candles) > 0:
+            if not candles.empty:
                 # Verify structure
-                first_key = list(candles.keys())[0]
-                candle = candles[first_key]
-                
-                self.assertIn("timestamp", candle)
-                self.assertIn("open", candle)
-                self.assertIn("high", candle)
-                self.assertIn("low", candle)
-                self.assertIn("close", candle)
-                self.assertIn("volume", candle)
+                cols = candles.columns
+                self.assertIn("open", cols)
+                self.assertIn("high", cols)
+                self.assertIn("low", cols)
+                self.assertIn("close", cols)
+                self.assertIn("volume", cols)
         
         except Exception as e:
             self.skipTest(f"Database unavailable: {e}")
@@ -58,10 +58,11 @@ class TestCandleDataLoading(unittest.TestCase):
         timeframe = "1d"
         
         try:
-            candles = load_candle_data(symbol, timeframe)
+            engine = BacktestEngine()
+            candles = engine.load_candle_data(symbol, timeframe)
             
-            if len(candles) > 1:
-                timestamps = [c["timestamp"] for c in candles.values()]
+            if candles is not None and not candles.empty:
+                timestamps = candles.index
                 
                 # Verify sorted
                 for i in range(len(timestamps) - 1):
@@ -87,10 +88,10 @@ class TestSMAStrategy(unittest.TestCase):
     
     def test_strategy_initialization(self):
         """Test SMA strategy initialization."""
-        strategy = SMAStrategy(fast_period=20, slow_period=50)
+        strategy = SMAStrategy(params={'fast_period': 20, 'slow_period': 50})
         
-        self.assertEqual(strategy.fast_period, 20)
-        self.assertEqual(strategy.slow_period, 50)
+        self.assertEqual(strategy.params['fast_period'], 20)
+        self.assertEqual(strategy.params['slow_period'], 50)
         self.assertIsNotNone(strategy.name)
     
     def test_strategy_signal_generation(self):
@@ -99,10 +100,10 @@ class TestSMAStrategy(unittest.TestCase):
         prices = np.arange(100, 200, dtype=float)  # 100 to 199
         close_prices = prices + np.random.normal(0, 5, len(prices))
         
-        strategy = SMAStrategy(fast_period=10, slow_period=20)
+        strategy = SMAStrategy(params={'fast_period': 10, 'slow_period': 20})
         
         # Verify that strategy can generate signals
-        self.assertTrue(hasattr(strategy, 'calculate_signals'))
+        self.assertTrue(hasattr(strategy, 'generate_signals'))
 
 
 class TestRSIStrategy(unittest.TestCase):
@@ -125,9 +126,9 @@ class TestRSIStrategy(unittest.TestCase):
     
     def test_strategy_initialization(self):
         """Test RSI strategy initialization."""
-        strategy = RSIStrategy(period=14)
+        strategy = RSIStrategy(params={'rsi_period': 14})
         
-        self.assertEqual(strategy.period, 14)
+        self.assertEqual(strategy.params['rsi_period'], 14)
         self.assertIsNotNone(strategy.name)
     
     def test_rsi_bounds(self):
@@ -146,8 +147,12 @@ class TestBacktestMetrics(unittest.TestCase):
     def test_backtest_result_structure(self):
         """Test BacktestResult dataclass structure."""
         result = BacktestResult(
+            strategy_name="SMA",
             symbol="INFY",
-            strategy="SMA",
+            start_date="2024-01-01",
+            end_date="2024-12-31",
+            init_cash=100000.0,
+            final_value=115490.0,
             total_return=0.1549,  # 15.49%
             cagr=0.1245,          # 12.45%
             sharpe_ratio=0.94,
@@ -158,9 +163,10 @@ class TestBacktestMetrics(unittest.TestCase):
             total_trades=3,
             duration_days=365
         )
+
         
         self.assertEqual(result.symbol, "INFY")
-        self.assertEqual(result.strategy, "SMA")
+        self.assertEqual(result.strategy_name, "SMA")
         self.assertAlmostEqual(result.total_return, 0.1549, places=4)
         self.assertGreater(result.sharpe_ratio, 0)
     
@@ -213,10 +219,10 @@ class TestStrategyExecution(unittest.TestCase):
         # Create test price data
         test_prices = np.arange(100, 150, dtype=float)
         
-        strategy = SMAStrategy(fast_period=5, slow_period=15)
+        strategy = SMAStrategy(params={'fast_period': 5, 'slow_period': 15})
         
         # Verify strategy has methods for signal generation
-        self.assertTrue(hasattr(strategy, 'calculate_signals') or 
+        self.assertTrue(hasattr(strategy, 'generate_signals') or 
                        hasattr(strategy, '__call__'))
     
     def test_position_management(self):
@@ -246,18 +252,18 @@ class TestStrategyValidation(unittest.TestCase):
     def test_sma_periods_validation(self):
         """Test SMA period validation."""
         # Fast period should be less than slow period
-        strategy = SMAStrategy(fast_period=20, slow_period=50)
+        strategy = SMAStrategy(params={'fast_period': 20, 'slow_period': 50})
         
-        self.assertLess(strategy.fast_period, strategy.slow_period)
+        self.assertLess(strategy.params['fast_period'], strategy.params['slow_period'])
     
     def test_positive_periods(self):
         """Test that periods are positive."""
-        strategy_sma = SMAStrategy(fast_period=10, slow_period=30)
-        strategy_rsi = RSIStrategy(period=14)
+        strategy_sma = SMAStrategy(params={'fast_period': 10, 'slow_period': 30})
+        strategy_rsi = RSIStrategy(params={'rsi_period': 14})
         
-        self.assertGreater(strategy_sma.fast_period, 0)
-        self.assertGreater(strategy_sma.slow_period, 0)
-        self.assertGreater(strategy_rsi.period, 0)
+        self.assertGreater(strategy_sma.params['fast_period'], 0)
+        self.assertGreater(strategy_sma.params['slow_period'], 0)
+        self.assertGreater(strategy_rsi.params['rsi_period'], 0)
 
 
 if __name__ == "__main__":

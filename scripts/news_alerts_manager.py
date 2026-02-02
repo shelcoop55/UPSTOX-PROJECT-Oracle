@@ -52,7 +52,12 @@ import hashlib
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import logging
-import re
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Try to import FinBERT for sentiment analysis
 try:
@@ -63,12 +68,7 @@ except ImportError:
     FINBERT_AVAILABLE = False
     logger.warning("FinBERT not available. Install with: pip install transformers torch")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+
 
 
 class NewsAlertsManager:

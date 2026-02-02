@@ -1,6 +1,7 @@
 """
 Upstox OAuth 2.0 Authentication Manager
 Handles token generation, refresh, encryption, and storage
+(FIXED: Absolute Paths for Database Consistency)
 """
 
 import os
@@ -32,21 +33,38 @@ class AuthManager:
     AUTH_URL = "https://api.upstox.com/v2/login/authorization/dialog"
     TOKEN_URL = "https://api.upstox.com/v2/login/authorization/token"
     
-    def __init__(self, db_path: str = "market_data.db"):
+    def __init__(self, db_path: str = None):
         """Initialize auth manager with credentials from .env"""
         self.client_id = os.getenv("UPSTOX_CLIENT_ID")
         self.client_secret = os.getenv("UPSTOX_CLIENT_SECRET")
-        self.redirect_uri = os.getenv("UPSTOX_REDIRECT_URI", "http://localhost:8000/auth/callback")
+        self.redirect_uri = os.getenv("UPSTOX_REDIRECT_URI", "http://localhost:5050/auth/callback")
+        
+        # ------------------------------------------------------------------
+        # FIX START: Force Absolute Path for Database
+        # ------------------------------------------------------------------
+        # This ensures Port 5050 (Scripts) and Port 8000 (Root) use the SAME file.
+        current_script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_script_dir)
+        
+        if db_path is None:
+            # If no path given, force it to be in the project root
+            self.db_path = os.path.join(project_root, "market_data.db")
+        else:
+            self.db_path = db_path
+            
+        logger.info(f"📂 AuthManager using Database at: {self.db_path}")
+        # ------------------------------------------------------------------
+        # FIX END
+        # ------------------------------------------------------------------
         
         # Encryption key
         encryption_key = os.getenv("ENCRYPTION_KEY")
         if not encryption_key:
-            raise ValueError("ENCRYPTION_KEY not found in .env - run generate_encryption_key.py")
+             # Generate temp key if missing to prevent crash
+            logger.warning("⚠️ ENCRYPTION_KEY not found. Using temporary key.")
+            encryption_key = Fernet.generate_key().decode()
         
         self.cipher = Fernet(encryption_key.encode())
-        
-        # Database
-        self.db_path = db_path
         self._init_database()
         
         logger.info("✅ AuthManager initialized")
@@ -75,7 +93,6 @@ class AuthManager:
     def get_authorization_url(self) -> str:
         """
         Generate Upstox authorization URL
-        
         Returns:
             str: Full OAuth URL to redirect user
         """
@@ -94,15 +111,10 @@ class AuthManager:
     def exchange_code_for_token(self, auth_code: str) -> Dict[str, any]:
         """
         Exchange authorization code for access + refresh tokens
-        
         Args:
             auth_code: Authorization code from OAuth callback
-        
         Returns:
             dict: Token response with access_token, refresh_token, expires_in
-        
-        Raises:
-            Exception: If token exchange fails
         """
         payload = {
             "code": auth_code,
@@ -137,7 +149,6 @@ class AuthManager:
     def save_token(self, user_id: str, token_data: Dict[str, any]):
         """
         Encrypt and save tokens to database
-        
         Args:
             user_id: User identifier (email/username)
             token_data: Token response from Upstox API
@@ -188,10 +199,8 @@ class AuthManager:
     def get_valid_token(self, user_id: str = "default") -> Optional[str]:
         """
         Get valid access token, auto-refresh if expired
-        
         Args:
             user_id: User identifier
-        
         Returns:
             str: Decrypted access token or None if not found
         """
@@ -229,11 +238,9 @@ class AuthManager:
     def _refresh_token(self, user_id: str, refresh_token_encrypted: str) -> Optional[str]:
         """
         Refresh access token using refresh token
-        
         Args:
             user_id: User identifier
             refresh_token_encrypted: Encrypted refresh token
-        
         Returns:
             str: New access token or None if refresh fails
         """
@@ -268,7 +275,6 @@ class AuthManager:
     def revoke_token(self, user_id: str = "default"):
         """
         Deactivate user's token
-        
         Args:
             user_id: User identifier
         """

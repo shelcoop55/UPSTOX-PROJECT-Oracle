@@ -20,9 +20,8 @@ if APP_MODE == 'api':
     print("🚀 Starting API Server in production mode")
     
 elif APP_MODE == 'frontend':
-    # Import Frontend Application
-    from app import app as application
-    print("🚀 Starting Frontend Server in production mode")
+    # Deprecated: Frontend Application (app.py) was deleted
+    raise ValueError("Frontend mode is deprecated. Use NiceGUI.")
     
 elif APP_MODE == 'nicegui':
     # NiceGUI dashboard

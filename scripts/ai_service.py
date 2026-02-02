@@ -298,15 +298,15 @@ class AIService:
             start_pat = f"{query_upper}%"
             
             sql = """
-                SELECT instrument_key, symbol, trading_symbol, segment_id, type_code, exchange_token 
-                FROM instruments 
+                SELECT instrument_key, symbol, trading_symbol, segment, instrument_type, exchange_token 
+                FROM exchange_listings 
                 WHERE symbol LIKE ? OR trading_symbol LIKE ?
                 ORDER BY 
                     CASE WHEN symbol = ? THEN 0 
                          WHEN symbol LIKE ? THEN 1 
                          ELSE 2 
                     END,
-                    CASE WHEN segment_id = 'NSE_EQ' THEN 0 ELSE 1 END, 
+                    CASE WHEN segment = 'NSE_EQ' THEN 0 ELSE 1 END, 
                     symbol ASC
                 LIMIT 10
             """

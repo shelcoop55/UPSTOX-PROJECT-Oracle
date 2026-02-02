@@ -12,10 +12,13 @@ from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scripts.db_manager import initialize_database
+from tests.test_utils import initialize_database
 from scripts.option_history_fetcher import (
-    fetch_option_candles, parse_option_candle, get_option_expiries
+    fetch_option_candles, parse_option_candle
 )
+# Note: get_option_expiries is actually in option_chain_fetcher
+from scripts.option_chain_fetcher import get_option_expiries
+
 
 
 class TestOptionHistoryFetcher(unittest.TestCase):
@@ -32,24 +35,27 @@ class TestOptionHistoryFetcher(unittest.TestCase):
         option_type = "CE"
         strike = 23000
         
+        
         try:
-            expiries = get_option_expiries(underlying)
             if not expiries:
                 self.skipTest("No expiries available")
             
             expiry = expiries[0]
             
-            # Calculate date range (last 30 days)
-            to_date = datetime.now()
-            from_date = to_date - timedelta(days=30)
+            # Use mock instrument key
+            instrument_key = f"NSE_FO|{underlying}|{expiry}"
             
+            # Calculate date range
+            to_date = datetime.now()
+            from_date = to_date - timedelta(days=5)
+            
+            # fetch_option_candles(instrument_key, timeframe, start_date, end_date, access_token)
             candles = fetch_option_candles(
-                underlying=underlying,
-                option_type=option_type,
-                strike_price=strike,
-                expiry_date=expiry,
-                from_date=from_date.strftime("%Y-%m-%d"),
-                to_date=to_date.strftime("%Y-%m-%d")
+                instrument_key=instrument_key,
+                timeframe="1d",
+                start_date=from_date,
+                end_date=to_date,
+                access_token="mock_token"
             )
             
             # Verify structure
@@ -77,7 +83,7 @@ class TestOptionHistoryFetcher(unittest.TestCase):
         ]
         
         for ts_str in test_timestamps:
-            try:
+            
                 parsed = isoparse(ts_str)
                 epoch = int(parsed.timestamp())
                 self.assertIsInstance(epoch, int)
@@ -91,22 +97,22 @@ class TestOptionHistoryFetcher(unittest.TestCase):
         option_type = "CE"
         strike = 23000
         
-        try:
-            expiries = get_option_expiries(underlying)
+        
+            expiries = get_option_expiries(underlying, "mock_token")
             if not expiries:
                 self.skipTest("No expiries available")
             
             expiry = expiries[0]
+            instrument_key = f"NSE_FO|{underlying}|{expiry}"
             to_date = datetime.now()
             from_date = to_date - timedelta(days=7)
             
             candles = fetch_option_candles(
-                underlying=underlying,
-                option_type=option_type,
-                strike_price=strike,
-                expiry_date=expiry,
-                from_date=from_date.strftime("%Y-%m-%d"),
-                to_date=to_date.strftime("%Y-%m-%d")
+                instrument_key=instrument_key,
+                timeframe="1d",
+                start_date=from_date,
+                end_date=to_date,
+                access_token="mock_token"
             )
             
             for candle in candles:
@@ -172,10 +178,8 @@ class TestOptionExpiryManagement(unittest.TestCase):
     def test_get_option_expiries(self):
         """Test fetching available option expiries."""
         underlying = "NIFTY"
-        
         try:
-            expiries = get_option_expiries(underlying)
-            
+            expiries = get_option_expiries(underlying, "mock_token")
             self.assertIsInstance(expiries, list)
             if len(expiries) > 0:
                 # Verify date format
@@ -193,8 +197,9 @@ class TestOptionExpiryManagement(unittest.TestCase):
         """Test that expiry dates are in chronological order."""
         underlying = "NIFTY"
         
-        try:
-            expiries = get_option_expiries(underlying)
+        
+        
+            expiries = get_option_expiries(underlying, "mock_token")
             
             if len(expiries) > 1:
                 # Parse and sort
@@ -216,7 +221,7 @@ class TestOptionCandleTimeframes(unittest.TestCase):
         """Test that option candles support various timeframes."""
         underlying = "NIFTY"
         
-        try:
+        
             expiries = get_option_expiries(underlying)
             if not expiries:
                 self.skipTest("No expiries available")

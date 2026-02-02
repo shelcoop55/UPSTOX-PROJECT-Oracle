@@ -11,9 +11,14 @@ from datetime import datetime
 import json
 import uuid
 
-from scripts.risk_manager import RiskManager
-from scripts.performance_analytics import PerformanceAnalytics
-from scripts.database_validator import DatabaseValidator
+try:
+    from scripts.risk_manager import RiskManager
+    from scripts.performance_analytics import PerformanceAnalytics
+    from scripts.database_validator import DatabaseValidator
+except ImportError:
+    from risk_manager import RiskManager
+    from performance_analytics import PerformanceAnalytics
+    from database_validator import DatabaseValidator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -417,11 +422,11 @@ class PaperTradingSystem:
         
         cursor.execute("""
             SELECT close
-            FROM market_data
-            WHERE symbol = ?
-            ORDER BY timestamp DESC
+            FROM candles
+            WHERE instrument_key = (SELECT instrument_key FROM exchange_listings WHERE symbol = ? OR trading_symbol = ? LIMIT 1)
+            ORDER BY ts DESC
             LIMIT 1
-        """, (symbol,))
+        """, (symbol, symbol))
         
         result = cursor.fetchone()
         conn.close()

@@ -6,7 +6,13 @@ db_path = "market_data.db"
 conn = sqlite3.connect(db_path)
 
 # query futures
-df = pd.read_sql("SELECT symbol, expiry, instrument_key FROM instruments WHERE segment_id='NSE_FO' AND type_code='FUT'", conn)
+query = """
+    SELECT el.symbol, d.expiry_date as expiry, el.instrument_key 
+    FROM exchange_listings el
+    LEFT JOIN derivatives d ON el.instrument_key = d.instrument_key
+    WHERE el.segment='NSE_FO' AND el.instrument_type='FUT'
+"""
+df = pd.read_sql(query, conn)
 conn.close()
 
 print(f"Total Futures: {len(df)}")

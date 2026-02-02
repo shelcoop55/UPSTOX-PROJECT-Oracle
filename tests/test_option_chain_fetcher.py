@@ -12,10 +12,12 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scripts.db_manager import initialize_database
+from tests.test_utils import initialize_database
 from scripts.option_chain_fetcher import (
     get_option_expiries, fetch_option_chain, parse_option_data
 )
+import time
+
 
 
 class TestOptionChainFetcher(unittest.TestCase):
@@ -31,7 +33,7 @@ class TestOptionChainFetcher(unittest.TestCase):
         underlying = "NIFTY"
         
         try:
-            expiries = get_option_expiries(underlying)
+            expiries = get_option_expiries(underlying, "mock_token")
             
             self.assertIsInstance(expiries, list)
             self.assertGreater(len(expiries), 0)
@@ -52,14 +54,14 @@ class TestOptionChainFetcher(unittest.TestCase):
         underlying = "NIFTY"
         
         try:
-            expiries = get_option_expiries(underlying)
+            expiries = get_option_expiries(underlying, "mock_token")
             if not expiries:
                 self.skipTest("No expiries available")
             
             expiry = expiries[0]
             
             # Fetch option chain
-            options = fetch_option_chain(underlying, expiry)
+            options = fetch_option_chain(underlying, expiry, "mock_token")
             
             self.assertIsInstance(options, list)
             
@@ -83,12 +85,12 @@ class TestOptionChainFetcher(unittest.TestCase):
         underlying = "NIFTY"
         
         try:
-            expiries = get_option_expiries(underlying)
+            expiries = get_option_expiries(underlying, "mock_token")
             if not expiries:
                 self.skipTest("No expiries available")
             
             expiry = expiries[0]
-            options = fetch_option_chain(underlying, expiry)
+            options = fetch_option_chain(underlying, expiry, "mock_token")
             
             for opt in options:
                 option_type = opt.get("option_type")
@@ -166,12 +168,12 @@ class TestOptionChainStructure(unittest.TestCase):
         underlying = "NIFTY"
         
         try:
-            expiries = get_option_expiries(underlying)
+            expiries = get_option_expiries(underlying, "mock_token")
             if not expiries:
                 self.skipTest("No expiries available")
             
             expiry = expiries[0]
-            options = fetch_option_chain(underlying, expiry)
+            options = fetch_option_chain(underlying, expiry, "mock_token")
             
             if len(options) > 0:
                 # Count CE and PE

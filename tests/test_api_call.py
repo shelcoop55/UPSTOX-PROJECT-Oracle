@@ -4,7 +4,11 @@ import requests
 auth = AuthManager()
 token = auth.get_valid_token()
 
-print(f"Using token: {token[:50]}...")
+if token:
+    print(f"Using token: {token[:50]}...")
+else:
+    print("❌ No valid token found in AuthManager.")
+    token = "MOCK_TOKEN"
 
 headers = {
     "Authorization": f"Bearer {token}",

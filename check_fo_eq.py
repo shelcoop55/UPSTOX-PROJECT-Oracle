@@ -6,10 +6,10 @@ cursor = conn.cursor()
 
 # Count NSE EQ stocks that have derivatives
 cursor.execute("""
-    SELECT count(*) 
-    FROM instruments 
-    WHERE segment_id='NSE_EQ' 
-    AND symbol IN (SELECT DISTINCT symbol FROM instruments WHERE segment_id='NSE_FO')
+    SELECT count(DISTINCT symbol) 
+    FROM exchange_listings 
+    WHERE segment='NSE_EQ' 
+    AND symbol IN (SELECT DISTINCT underlying_symbol FROM exchange_listings WHERE segment='NSE_FO')
 """)
 print(f"NSE EQ stocks with F&O: {cursor.fetchone()[0]}")
 

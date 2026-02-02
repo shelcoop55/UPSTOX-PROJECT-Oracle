@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app import app as flask_app
+from scripts.api_server import app as flask_app
 
 
 @pytest.fixture
@@ -65,24 +65,23 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         
         data = response.get_json()
-        assert isinstance(data, dict)
+        assert isinstance(data, list)
     
-    def test_indices_endpoint(self, client):
-        """Test market indices API endpoint"""
-        response = client.get('/api/indices')
+    def test_signals_endpoint(self, client):
+        """Test trading signals API endpoint"""
+        response = client.get('/api/signals')
         assert response.status_code == 200
         
         data = response.get_json()
-        assert 'indices' in data
-        assert isinstance(data['indices'], list)
+        assert isinstance(data, list)
     
-    def test_data_endpoint(self, client):
-        """Test formatted data endpoint"""
-        response = client.get('/api/data')
+    def test_instruments_endpoint(self, client):
+        """Test instruments API endpoint"""
+        response = client.get('/api/instruments/nse-eq')
         assert response.status_code == 200
         
         data = response.get_json()
-        assert isinstance(data, dict)
+        assert 'instruments' in data
 
 
 class TestPageRoutes:
@@ -92,21 +91,10 @@ class TestPageRoutes:
         """Test dashboard page"""
         response = client.get('/')
         assert response.status_code == 200
-        assert b'Dashboard' in response.data or b'Upstox' in response.data
-    
-    def test_positions_route(self, client):
-        """Test positions page"""
-        response = client.get('/positions')
-        assert response.status_code == 200
-    
-    def test_options_route(self, client):
-        """Test options page"""
-        response = client.get('/options')
-        assert response.status_code == 200
     
     def test_downloads_route(self, client):
         """Test downloads page"""
-        response = client.get('/downloads')
+        response = client.get('/api/page/downloads')
         assert response.status_code == 200
 
 

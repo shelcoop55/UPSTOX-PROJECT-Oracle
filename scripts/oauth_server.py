@@ -1,6 +1,7 @@
 """
 Flask OAuth Server for Upstox Authentication
 Handles OAuth flow with browser-based authorization
+(FIXED: Auto-redirects to Dashboard after login)
 """
 
 import sys
@@ -10,7 +11,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, request, redirect, jsonify
-from auth_manager import AuthManager
+from scripts.auth_manager import AuthManager
 import logging
 import webbrowser
 
@@ -86,28 +87,16 @@ def auth_callback():
         # Exchange code for tokens
         token_data = auth_manager.exchange_code_for_token(code)
         
-        # Save tokens to database
+        # Save tokens to database (Now uses the shared absolute path DB)
         auth_manager.save_token("default", token_data)
         
-        logger.info("✅ Authentication successful!")
+        logger.info("✅ Authentication successful! Redirecting to Dashboard...")
         
-        # Success page
-        return f"""
-        <html>
-        <body style="font-family: Arial; padding: 50px; text-align: center;">
-            <h1 style="color: green;">✅ Authentication Successful!</h1>
-            <p>Your Upstox account is now connected.</p>
-            <p>Access token: <code>{token_data['access_token'][:30]}...</code></p>
-            <p style="margin-top: 30px;">You can close this window and return to your terminal.</p>
-            <script>
-                setTimeout(function() {{
-                    window.close();
-                }}, 3000);
-            </script>
-        </body>
-        </html>
-        """
-    
+        # ------------------------------------------------------------------
+        # FIX: AUTO-REDIRECT TO DASHBOARD
+        # ------------------------------------------------------------------
+        return redirect("http://localhost:8080")
+        
     except Exception as e:
         logger.error(f"❌ Request failed: {e}", exc_info=True)
         return f"""

@@ -16,8 +16,9 @@ import json
 try:
     import vectorbt as vbt
 except ImportError:
-    print("ERROR: vectorbt not installed. Install with: pip install vectorbt[full]")
-    exit(1)
+    logger = logging.getLogger(__name__)
+    logger.warning("vectorbt not installed. Backtesting functionality will be limited. Install with: pip install vectorbt[full]")
+    vbt = None
 
 # Configure logging
 logging.basicConfig(

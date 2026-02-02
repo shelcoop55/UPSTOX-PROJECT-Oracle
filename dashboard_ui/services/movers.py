@@ -43,37 +43,29 @@ class MarketMoversService:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            # Based on DB Verification findings
+            # Use exchange_listings and master_stocks schema
             if category == 'NSE_MAIN':
-                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_EQ' AND type_code IN ('EQ', 'BE')"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='NSE_EQ' AND instrument_type IN ('EQ', 'BE')"
             
             elif category == 'NSE_SME':
-                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_EQ' AND type_code IN ('SM', 'ST')"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='NSE_EQ' AND instrument_type IN ('SM', 'SG')"
             
             elif category == 'BSE_MAIN':
-                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='BSE_EQ' AND type_code IN ('A', 'B')"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='BSE_EQ' AND instrument_type IN ('A', 'B', 'X', 'F', 'XT', 'GS', 'G', 'T', 'Z')"
             
             elif category == 'BSE_SME':
-                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='BSE_EQ' AND type_code IN ('M', 'MT')"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='BSE_EQ' AND instrument_type IN ('M', 'MT')"
             
             elif category == 'NSE_FUT':
-                # Futures: Fetch all active futures
-                query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_FO' AND type_code='FUT'"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='NSE_FO' AND instrument_type='FUT'"
                 
             elif category == 'NSE_FO_EQ':
-                # Stocks (Equity) that have F&O contracts
-                # Logic: Underlying name is first part of F&O symbol (e.g., 'RELIANCE' from 'RELIANCE FUT...')
-                # We use a subquery to filter NSE_EQ instruments whose symbol matches the start of any NSE_FO symbol.
-                # Optimized for SQLite: 
+                # Stocks (Equity) that have F&O enabled in master_stocks
                 query = """
-                SELECT instrument_key, symbol, trading_symbol 
-                FROM instruments 
-                WHERE segment_id='NSE_EQ' 
-                AND symbol IN (
-                    SELECT DISTINCT substr(symbol, 0, instr(symbol, ' ')) 
-                    FROM instruments 
-                    WHERE segment_id='NSE_FO'
-                )
+                SELECT el.instrument_key, el.symbol, el.trading_symbol 
+                FROM exchange_listings el
+                JOIN master_stocks ms ON el.symbol = ms.symbol
+                WHERE el.segment='NSE_EQ' AND ms.is_fno_enabled = 1
                 """
                 
             elif category == 'VOLUME_SHOCKERS':
@@ -143,15 +135,18 @@ class MarketMoversService:
         key_map = {row[0]: {'symbol': row[1], 'name': row[2]} for row in instruments}
         keys_to_fetch = list(key_map.keys())
         
-        # Load Metadata for Sectors
         # Fetch sector map: {symbol: sector}
         sector_map = {}
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT symbol, sector FROM stock_metadata")
+            cursor.execute("""
+                SELECT ms.symbol, s.name 
+                FROM master_stocks ms
+                LEFT JOIN sectors s ON ms.sector_id = s.id
+            """)
             for r in cursor.fetchall():
-                 sector_map[r[0]] = r[1]
+                 sector_map[r[0]] = r[1] or "-"
             conn.close()
         except:
              pass

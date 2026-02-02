@@ -12,7 +12,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scripts.db_manager import initialize_database
+from tests.test_utils import initialize_database
 from scripts.expired_options_fetcher import (
     get_available_expiries,
     fetch_expired_option_contracts,
@@ -73,7 +73,7 @@ class TestExpiredOptionsFetcher(unittest.TestCase):
                 contract = contracts[0]
                 
                 # Verify required fields
-                self.assertIn("tradingsymbol", contract)
+                self.assertIn("trading_symbol", contract)
                 self.assertIn("exchange_token", contract)
                 self.assertIn("exchange", contract)
         
@@ -143,7 +143,7 @@ class TestOptionDataParsing(unittest.TestCase):
     def test_parse_option_data(self):
         """Test parsing option contract data."""
         test_contract = {
-            "tradingsymbol": "NIFTY22JAN23000CE",
+            "trading_symbol": "NIFTY22JAN23000CE",
             "exchange_token": "12345",
             "exchange": "NFO",
             "strike_price": 23000
@@ -170,7 +170,7 @@ class TestOptionDataParsing(unittest.TestCase):
         ]
         
         for symbol, expected_type in test_cases:
-            contract = {"tradingsymbol": symbol}
+            contract = {"trading_symbol": symbol}
             parsed = parse_option_data(contract, "NIFTY", "2025-01-22")
             
             self.assertEqual(parsed["option_type"], expected_type)
@@ -184,7 +184,7 @@ class TestOptionDataParsing(unittest.TestCase):
         ]
         
         for symbol, expected_strike in test_cases:
-            contract = {"tradingsymbol": symbol, "strike_price": None}
+            contract = {"trading_symbol": symbol, "strike_price": None}
             parsed = parse_option_data(contract, "NIFTY", "2025-01-22")
             
             # Strike might be extracted from symbol or contract
