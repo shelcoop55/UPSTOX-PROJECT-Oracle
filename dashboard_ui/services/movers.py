@@ -69,8 +69,7 @@ class MarketMoversService:
                 """
                 
             elif category == 'VOLUME_SHOCKERS':
-                 # All NSE Equity for Volume Shocker processing
-                 query = "SELECT instrument_key, symbol, trading_symbol FROM instruments WHERE segment_id='NSE_EQ' AND type_code IN ('EQ', 'BE')"
+                query = "SELECT instrument_key, symbol, trading_symbol FROM exchange_listings WHERE segment='NSE_EQ' AND instrument_type IN ('EQ', 'BE')"
             
             # --- INDEX CATEGORIES ---
             elif category == 'NIFTY_50':
