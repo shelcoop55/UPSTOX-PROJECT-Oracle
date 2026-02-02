@@ -1,9 +1,11 @@
 """
 Upstox Trading Platform - Flask Web Server
 Serves HTML templates with backend API integration
+Enhanced with: Redis caching, compression, rate limiting, Prometheus metrics
 """
 
 import sys
+import os
 from pathlib import Path
 from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
@@ -29,6 +31,17 @@ app = Flask(__name__,
 
 # Enable CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Setup enhancements (Redis, compression, rate limiting, metrics, Sentry)
+try:
+    from config.enhancements import setup_all_enhancements
+    enhancements = setup_all_enhancements(app)
+    cache = enhancements.get('cache')
+    limiter = enhancements.get('limiter')
+except ImportError:
+    logger.warning("Enhancement module not available, continuing with basic setup")
+    cache = None
+    limiter = None
 
 # Backend API URL (api_server.py runs on port 8000)
 BACKEND_API_URL = 'http://localhost:8000/api'
@@ -59,6 +72,17 @@ def get_portfolio_data():
         'mode': 'paper'
     }
 
+
+def get_portfolio_data_cached():
+    """Cached version of portfolio data (30 second cache)"""
+    if cache:
+        @cache.cached(timeout=30, key_prefix='portfolio')
+        def _get_portfolio():
+            return get_portfolio_data()
+        return _get_portfolio()
+    return get_portfolio_data()
+
+
 def get_positions_data():
     """Fetch positions from backend API"""
     try:
@@ -76,6 +100,17 @@ def get_positions_data():
             {'symbol': 'RELIANCE', 'qty': 2, 'ltp': 2600.00, 'avg_price': 2550.00, 'pnl': 3000.00},
         ]
     }
+
+
+def get_positions_data_cached():
+    """Cached version of positions data (30 second cache)"""
+    if cache:
+        @cache.cached(timeout=30, key_prefix='positions')
+        def _get_positions():
+            return get_positions_data()
+        return _get_positions()
+    return get_positions_data()
+
 
 def get_market_indices():
     """Fetch market indices from backend API"""
@@ -116,6 +151,16 @@ def get_market_indices():
         ]
     }
 
+
+def get_market_indices_cached():
+    """Cached version of market indices (60 second cache)"""
+    if cache:
+        @cache.cached(timeout=60, key_prefix='indices')
+        def _get_indices():
+            return get_market_indices()
+        return _get_indices()
+    return get_market_indices()
+
 def format_currency(value):
     """Format value as Indian currency"""
     if isinstance(value, (int, float)):
@@ -124,8 +169,8 @@ def format_currency(value):
 
 def format_data_for_template():
     """Prepare all data for template rendering"""
-    portfolio = get_portfolio_data()
-    indices = get_market_indices()
+    portfolio = get_portfolio_data_cached()
+    indices = get_market_indices_cached()
     
     # Format portfolio for display
     template_data = {
@@ -179,7 +224,7 @@ def dashboard():
 def positions():
     """Positions page"""
     data = format_data_for_template()
-    positions_data = get_positions_data()
+    positions_data = get_positions_data_cached()
     return render_template('positions.html', data=data, positions=positions_data.get('positions', []))
 
 @app.route('/options')
@@ -205,18 +250,18 @@ def api_data():
 
 @app.route('/api/portfolio')
 def api_portfolio():
-    """Get portfolio - forwards from backend API"""
-    return jsonify(get_portfolio_data())
+    """Get portfolio - forwards from backend API (cached)"""
+    return jsonify(get_portfolio_data_cached())
 
 @app.route('/api/positions')
 def api_positions():
-    """Get positions - forwards from backend API"""
-    return jsonify(get_positions_data())
+    """Get positions - forwards from backend API (cached)"""
+    return jsonify(get_positions_data_cached())
 
 @app.route('/api/indices')
 def api_indices():
-    """Get market indices - forwards from backend API"""
-    return jsonify(get_market_indices())
+    """Get market indices - forwards from backend API (cached)"""
+    return jsonify(get_market_indices_cached())
 
 @app.route('/api/health')
 def health_check():
