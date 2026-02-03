@@ -259,154 +259,145 @@ def render_page(state):
 
 
 def render_broad_market_tab(indices: List[Dict]):
-    """Render Broad Market Indices tab with filters"""
+    """Render Broad Market Indices tab with modern layout"""
     
-    with ui.row().classes("w-full gap-4"):
-        # Left panel: Index selector
-        with ui.column().classes("w-80 flex-shrink-0"):
-            with Components.card():
-                ui.label("Select Index").classes("text-lg font-bold mb-4")
-                
-                # Filter buttons
-                with ui.row().classes("w-full gap-2 mb-4 flex-wrap"):
-                    filter_all = ui.button("ALL", icon="list").props("outline dense").classes("flex-1 min-w-[60px]")
-                    filter_large = ui.button("LARGE CAP", icon="trending_up").props("outline dense").classes("flex-1 min-w-[60px]")
-                    filter_mid = ui.button("MID CAP", icon="show_chart").props("outline dense").classes("flex-1 min-w-[60px]")
-                    filter_small = ui.button("SMALL CAP", icon="insights").props("outline dense").classes("flex-1 min-w-[60px]")
-                
-                # Index list container
-                index_list_container = ui.column().classes("w-full gap-2 max-h-[600px] overflow-y-auto")
-        
-        # Right panel: Index details
-        details_container = ui.column().classes("flex-1 gap-4")
-        
-        with details_container:
-            # Placeholder
-            with Components.card():
-                ui.label("👈 Select an index to view details").classes("text-lg text-slate-400 text-center py-12")
-        
-        def load_index_details(idx: Dict):
-            """Load and display index details"""
-            print(f"[DEBUG] load_index_details called with idx: {idx}")
-            print(f"[DEBUG] Index code: {idx.get('code')}, Index name: {idx.get('name')}")
+    # State management
+    selected_index_code = {'value': 'NIFTY50'}  # Default to NIFTY50
+    
+    # Header with index selector as horizontal tabs
+    with ui.row().classes("w-full gap-2 mb-6"):
+        ui.label("📊 Select Index").classes("text-sm font-bold text-slate-400 uppercase tracking-wide")
+    
+    # Index selector as pills/tabs
+    with ui.row().classes("w-full gap-2 mb-6 flex-wrap"):
+        for idx in indices[:8]:  # Show top 8 indices as tabs
+            code = idx['code']
+            name = idx['name'].replace(' Index', '').replace('Nifty ', '')
             
-            details_container.clear()
+            def create_tab_handler(index_data):
+                return lambda: load_index_details(index_data, selected_index_code)
             
-            with details_container:
-                # Header card
-                with Components.card():
-                    with ui.row().classes("w-full justify-between items-start"):
-                        with ui.column().classes("gap-2"):
-                            ui.label(idx['name']).classes("text-2xl font-bold text-white")
-                            ui.label(f"Index Code: {idx['code']}").classes("text-sm text-slate-400")
-                        
-                        ui.button("Refresh", icon="refresh", on_click=lambda: load_index_details(idx)).props("outline dense")
-                
-                # Stats card
-                print(f"[DEBUG] Calling get_index_stats for {idx['code']}")
-                stats = get_index_stats(idx['code'])
-                print(f"[DEBUG] Stats returned: {stats}")
-                
-                with Components.card():
-                    ui.label("Index Statistics").classes("text-lg font-bold mb-4")
+            ui.button(
+                name, 
+                on_click=create_tab_handler(idx)
+            ).props(
+                f"{'unelevated' if code == selected_index_code['value'] else 'outline'} dense"
+            ).classes(
+                f"{'bg-blue-600 text-white' if code == selected_index_code['value'] else 'text-slate-300'}"
+            )
+    
+    # Content container for index details
+    content_container = ui.column().classes("w-full gap-4")
+    
+    def load_index_details(idx: Dict, state_ref: Dict):
+        """Load and display index details with modern layout"""
+        state_ref['value'] = idx['code']
+        content_container.clear()
+        
+        with content_container:
+            # Index header with stats
+            with ui.card().classes("w-full bg-gradient-to-r from-slate-800 to-slate-900 border-l-4 border-blue-500"):
+                with ui.row().classes("w-full items-center justify-between p-4"):
+                    with ui.column().classes("gap-2"):
+                        ui.label(idx['name']).classes("text-3xl font-bold text-white")
+                        ui.label(f"CODE: {idx['code']}").classes("text-xs text-slate-400 font-mono")
                     
-                    with ui.row().classes("w-full gap-4"):
-                        with ui.column().classes("flex-1 bg-blue-500/10 p-4 rounded-lg"):
-                            ui.label("Total Constituents").classes("text-xs text-slate-400 uppercase")
-                            ui.label(str(stats['actual_count'])).classes("text-3xl font-bold text-blue-400")
+                    # Quick stats
+                    stats = get_index_stats(idx['code'])
+                    with ui.row().classes("gap-6"):
+                        with ui.column().classes("items-center"):
+                            ui.label(str(stats['actual_count'])).classes("text-2xl font-bold text-blue-400")
+                            ui.label("Constituents").classes("text-xs text-slate-400")
                         
-                        with ui.column().classes("flex-1 bg-purple-500/10 p-4 rounded-lg"):
-                            ui.label("Expected").classes("text-xs text-slate-400 uppercase")
-                            ui.label(str(idx['expected_count'])).classes("text-3xl font-bold text-purple-400")
-                        
-                        with ui.column().classes("flex-1 bg-green-500/10 p-4 rounded-lg"):
-                            ui.label("Data Status").classes("text-xs text-slate-400 uppercase")
-                            status = "✅ Complete" if stats['actual_count'] >= idx['expected_count'] * 0.9 else "⚠️ Partial"
-                            ui.label(status).classes("text-xl font-bold text-green-400")
-                    
-                    # Top sectors
-                    if stats['top_sectors']:
-                        ui.label("Top 5 Sectors").classes("text-sm font-bold mt-4 mb-2")
+                        with ui.column().classes("items-center"):
+                            coverage = (stats['actual_count'] / idx['expected_count'] * 100) if idx['expected_count'] > 0 else 0
+                            ui.label(f"{coverage:.0f}%").classes("text-2xl font-bold text-green-400")
+                            ui.label("Coverage").classes("text-xs text-slate-400")
+            
+            # Top sectors distribution
+            if stats['top_sectors']:
+                with ui.card().classes("w-full"):
+                    ui.label("📊 Sector Distribution").classes("text-lg font-bold mb-4")
+                    with ui.row().classes("w-full gap-4 flex-wrap"):
                         for sector_data in stats['top_sectors']:
-                            with ui.row().classes("w-full justify-between items-center py-1"):
-                                ui.label(sector_data['sector']).classes("text-slate-300")
-                                ui.label(f"{sector_data['count']} stocks").classes("text-slate-500 text-sm")
-                
-                # Constituents table
-                print(f"[DEBUG] Calling get_index_constituents for {idx['code']}")
-                constituents = get_index_constituents(idx['code'])
-                print(f"[DEBUG] get_index_constituents returned {len(constituents)} items")
-                
-                with Components.card():
-                    ui.label(f"Constituents ({len(constituents)})").classes("text-lg font-bold mb-4")
-                    
-                    if constituents:
+                            with ui.card().classes("flex-1 min-w-[150px] bg-slate-800/50"):
+                                ui.label(sector_data['sector']).classes("text-sm text-slate-300 mb-1")
+                                with ui.row().classes("items-center gap-2"):
+                                    ui.label(str(sector_data['count'])).classes("text-xl font-bold text-blue-400")
+                                    ui.label("stocks").classes("text-xs text-slate-500")
+            
+            # Constituents table
+            constituents = get_index_constituents(idx['code'])
+            
+            if constituents:
+                with ui.card().classes("w-full"):
+                    with ui.row().classes("w-full items-center justify-between mb-4"):
+                        ui.label(f"📈 Constituents ({len(constituents)})").classes("text-lg font-bold")
+                        
                         # Search box
                         search_input = ui.input(
-                            label="Search stocks",
-                            placeholder="Type symbol or company name..."
-                        ).props("outlined dense clearable").classes("w-full mb-4")
-                        
-                        # Table columns (showing industry as main category since sector is often null)
-                        columns = [
-                            {'name': 'symbol', 'label': 'Symbol', 'field': 'symbol', 'align': 'left', 'sortable': True},
-                            {'name': 'company_name', 'label': 'Company Name', 'field': 'company_name', 'align': 'left', 'sortable': True},
-                            {'name': 'weight', 'label': 'Weight %', 'field': 'weight', 'align': 'center', 'sortable': True},
-                            {'name': 'industry', 'label': 'Category', 'field': 'industry', 'align': 'left', 'sortable': True}
-                        ]
-                        
-                        table = ui.table(
-                            columns=columns,
-                            rows=constituents,
-                            row_key='symbol',
-                            pagination={'rowsPerPage': 20, 'sortBy': 'symbol', 'descending': False}
-                        ).classes("w-full")
-                        
-                        # Search filter
-                        def filter_table():
-                            query = search_input.value.lower() if search_input.value else ""
-                            if query:
-                                filtered = [
-                                    c for c in constituents 
-                                    if query in c['symbol'].lower() or query in c['company_name'].lower()
-                                ]
-                                table.rows = filtered
-                            else:
-                                table.rows = constituents
-                            table.update()
-                        
-                        search_input.on('input', lambda: filter_table())
-                    else:
-                        ui.label("No constituents data available").classes("text-slate-400 italic")
-        
-        def render_index_list(filter_category: Optional[str] = None):
-            """Render filtered index list"""
-            index_list_container.clear()
-            
-            filtered_indices = indices
-            if filter_category:
-                filtered_indices = [idx for idx in indices if filter_category.lower() in idx['category'].lower()]
-            
-            with index_list_container:
-                for idx in filtered_indices:
-                    with ui.card().classes("w-full p-3 cursor-pointer hover:bg-slate-700/50 transition-colors") as card:
-                        with ui.row().classes("w-full justify-between items-center"):
-                            with ui.column().classes("gap-1"):
-                                ui.label(idx['name']).classes("font-semibold text-white")
-                                ui.label(f"{idx['expected_count']} stocks • {idx['category']}").classes("text-xs text-slate-400")
-                            ui.icon("chevron_right").classes("text-slate-400")
-                        
-                        # Click handler
-                        card.on('click', lambda i=idx: load_index_details(i))
-        
-        # Filter button handlers
-        filter_all.on('click', lambda: render_index_list(None))
-        filter_large.on('click', lambda: render_index_list('large'))
-        filter_mid.on('click', lambda: render_index_list('mid'))
-        filter_small.on('click', lambda: render_index_list('small'))
-        
-        # Initial render
-        render_index_list()
+                            placeholder="Search symbol or company..."
+                        ).props("outlined dense clearable").classes("w-80")
+                    
+                    # Modern table with better columns
+                    columns = [
+                        {'name': 'symbol', 'label': 'SYMBOL', 'field': 'symbol', 'align': 'left', 'sortable': True},
+                        {'name': 'company_name', 'label': 'COMPANY', 'field': 'company_name', 'align': 'left', 'sortable': True},
+                        {'name': 'industry', 'label': 'CATEGORY', 'field': 'industry', 'align': 'left', 'sortable': True},
+                        {'name': 'change', 'label': '% CHANGE', 'field': 'change', 'align': 'right', 'sortable': True},
+                    ]
+                    
+                    # Add mock % change for now (will integrate with live API later)
+                    import random
+                    for c in constituents:
+                        c['change'] = round(random.uniform(-5, 5), 2)
+                    
+                    table = ui.table(
+                        columns=columns,
+                        rows=constituents,
+                        row_key='symbol',
+                        pagination={'rowsPerPage': 25, 'sortBy': 'symbol', 'descending': False}
+                    ).classes("w-full")
+                    
+                    # Custom cell styling for % change
+                    table.add_slot('body-cell-change', '''
+                        <q-td :props="props">
+                            <div :class="props.value >= 0 ? 'text-green-400' : 'text-red-400'" class="font-bold">
+                                {{ props.value >= 0 ? '+' : '' }}{{ props.value.toFixed(2) }}%
+                            </div>
+                        </q-td>
+                    ''')
+                    
+                    # Custom cell styling for symbol (make it stand out)
+                    table.add_slot('body-cell-symbol', '''
+                        <q-td :props="props">
+                            <div class="font-mono font-bold text-blue-400">
+                                {{ props.value }}
+                            </div>
+                        </q-td>
+                    ''')
+                    
+                    # Search filter
+                    def filter_table():
+                        query = search_input.value.lower() if search_input.value else ""
+                        if query:
+                            filtered = [
+                                c for c in constituents 
+                                if query in c['symbol'].lower() or query in c['company_name'].lower()
+                            ]
+                            table.rows = filtered
+                        else:
+                            table.rows = constituents
+                        table.update()
+                    
+                    search_input.on('input', lambda: filter_table())
+            else:
+                with ui.card().classes("w-full"):
+                    ui.label("⚠️ No constituents data available").classes("text-slate-400 text-center py-8")
+    
+    # Initial load - show NIFTY50 by default
+    default_idx = next((idx for idx in indices if idx['code'] == 'NIFTY50'), indices[0])
+    load_index_details(default_idx, selected_index_code)
 
 def render_sectoral_tab(indices: List[Dict]):
     """Render Sectoral Indices tab"""
