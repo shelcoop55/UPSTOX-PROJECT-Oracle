@@ -163,7 +163,9 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for complete deployment guide.
 - 📋 **[MISSING_API_ENDPOINTS.md](MISSING_API_ENDPOINTS.md)** - Pending API integrations
 
 ### Operations
-- 🐛 **[.github/debugging-protocol.md](.github/debugging-protocol.md)** - God-Mode debugging guide
+- 🐛 **[.github/debugging-protocol.md](.github/debugging-protocol.md)** - Complete debugging protocol (1000 lines)
+- 📖 **[.github/debugging-examples.md](.github/debugging-examples.md)** - 6 real-world debugging scenarios
+- ⚡ **[.github/debugging-quick-reference.md](.github/debugging-quick-reference.md)** - Quick debugging cheat sheets
 - 📊 **[docs/PRODUCTION_FEATURES.md](docs/PRODUCTION_FEATURES.md)** - Production feature list
 - 🔒 **[docs/SECURITY_PATCH.md](docs/SECURITY_PATCH.md)** - Security guidelines
 
@@ -340,6 +342,9 @@ Contributions are welcome! Please follow these steps:
 
 ## 🐛 Troubleshooting
 
+### Quick Debugging
+See **[.github/debugging-quick-reference.md](.github/debugging-quick-reference.md)** for instant help.
+
 ### Common Issues
 
 **Import errors:**
@@ -359,7 +364,23 @@ kill -9 <PID>
 rm market_data.db-shm market_data.db-wal
 ```
 
-**See:** [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) for complete guide
+**UI not updating (NiceGUI):**
+- Check if you're using `@ui.refreshable` decorator
+- Call `.refresh()` after async updates
+- See debugging-examples.md for solutions
+
+**UI freezes on button click:**
+- Never use `time.sleep()` in event handlers
+- Use `await run.io_bound()` for blocking operations
+- See async awareness section in debugging protocol
+
+**Docker networking issues:**
+- Use service names instead of `localhost`
+- Set `API_BASE=http://backend:9000` in environment
+
+**For complete debugging guide:** [.github/debugging-protocol.md](.github/debugging-protocol.md)
+
+**See:** [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) for deployment-specific issues
 
 ---
 
