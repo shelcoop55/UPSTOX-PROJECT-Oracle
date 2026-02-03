@@ -21,7 +21,7 @@ API_BASE = "http://localhost:8000"
 # ============================================================================
 
 def get_broad_market_indices() -> List[Dict]:
-    """Get all broad market indices from database"""
+    """Get all broad market indices from new schema (nse_index_metadata)"""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -30,17 +30,18 @@ def get_broad_market_indices() -> List[Dict]:
             SELECT 
                 index_code,
                 index_name,
-                index_subcategory,
-                constituent_count
-            FROM index_master
-            WHERE index_category = 'broad'
+                index_type,
+                expected_constituents
+            FROM nse_index_metadata
+            WHERE index_type = 'broad'
             ORDER BY 
                 CASE 
                     WHEN index_code = 'NIFTY50' THEN 1
-                    WHEN index_code = 'NIFTY100' THEN 2
-                    WHEN index_code = 'NIFTY200' THEN 3
-                    WHEN index_code = 'NIFTY500' THEN 4
-                    ELSE 5
+                    WHEN index_code = 'NIFTYNEXT50' THEN 2
+                    WHEN index_code = 'NIFTY100' THEN 3
+                    WHEN index_code = 'NIFTY200' THEN 4
+                    WHEN index_code = 'NIFTY500' THEN 5
+                    ELSE 6
                 END,
                 index_name
         """)
@@ -59,11 +60,13 @@ def get_broad_market_indices() -> List[Dict]:
         
     except Exception as e:
         print(f"Error fetching broad indices: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
 def get_sectoral_indices() -> List[Dict]:
-    """Get all sectoral indices from database"""
+    """Get all sectoral/thematic indices from new schema"""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -72,10 +75,10 @@ def get_sectoral_indices() -> List[Dict]:
             SELECT 
                 index_code,
                 index_name,
-                index_subcategory,
-                constituent_count
-            FROM index_master
-            WHERE index_category = 'sectoral'
+                index_type,
+                expected_constituents
+            FROM nse_index_metadata
+            WHERE index_type IN ('sectoral', 'thematic', 'strategy')
             ORDER BY index_name
         """)
         
@@ -93,11 +96,13 @@ def get_sectoral_indices() -> List[Dict]:
         
     except Exception as e:
         print(f"Error fetching sectoral indices: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
 def get_index_constituents(index_code: str) -> List[Dict]:
-    """Get constituents of a specific index"""
+    """Get constituents of a specific index from new schema (index_constituents_v2)"""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -107,14 +112,17 @@ def get_index_constituents(index_code: str) -> List[Dict]:
                 ic.symbol,
                 ic.company_name,
                 ic.isin,
-                ic.series,
-                ss.sector_name,
-                ss.industry
-            FROM index_constituents ic
-            LEFT JOIN stock_sectors st ON ic.symbol = st.symbol
-            LEFT JOIN sectors ss ON st.sector_id = ss.id
+                ic.weight,
+                ic.sector,
+                ic.industry,
+                t1.series
+            FROM index_constituents_v2 ic
+            LEFT JOIN instruments_tier1 t1 ON ic.instrument_key = t1.instrument_key
             WHERE ic.index_code = ? AND ic.is_active = 1
-            ORDER BY ic.symbol
+            ORDER BY 
+                CASE WHEN ic.weight IS NOT NULL THEN 0 ELSE 1 END,
+                ic.weight DESC,
+                ic.symbol
         """, (index_code,))
         
         constituents = []
@@ -123,9 +131,10 @@ def get_index_constituents(index_code: str) -> List[Dict]:
                 'symbol': row[0],
                 'company_name': row[1] or row[0],
                 'isin': row[2],
-                'series': row[3],
+                'weight': round(row[3], 2) if row[3] else None,
                 'sector': row[4] or 'N/A',
-                'industry': row[5] or 'N/A'
+                'industry': row[5] or 'N/A',
+                'series': row[6] or 'EQ'
             })
         
         conn.close()
@@ -133,11 +142,13 @@ def get_index_constituents(index_code: str) -> List[Dict]:
         
     except Exception as e:
         print(f"Error fetching constituents for {index_code}: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
 def get_index_stats(index_code: str) -> Dict:
-    """Get statistics for an index"""
+    """Get statistics for an index from new schema"""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -145,19 +156,17 @@ def get_index_stats(index_code: str) -> Dict:
         # Get actual constituent count
         cursor.execute("""
             SELECT COUNT(*) 
-            FROM index_constituents 
+            FROM index_constituents_v2 
             WHERE index_code = ? AND is_active = 1
         """, (index_code,))
         actual_count = cursor.fetchone()[0]
         
         # Get sector distribution
         cursor.execute("""
-            SELECT s.sector_name, COUNT(*) as count
-            FROM index_constituents ic
-            JOIN stock_sectors st ON ic.symbol = st.symbol
-            JOIN sectors s ON st.sector_id = s.id
-            WHERE ic.index_code = ? AND ic.is_active = 1
-            GROUP BY s.sector_name
+            SELECT sector, COUNT(*) as count
+            FROM index_constituents_v2
+            WHERE index_code = ? AND is_active = 1 AND sector IS NOT NULL
+            GROUP BY sector
             ORDER BY count DESC
             LIMIT 5
         """, (index_code,))
@@ -175,6 +184,8 @@ def get_index_stats(index_code: str) -> Dict:
         
     except Exception as e:
         print(f"Error fetching stats for {index_code}: {e}")
+        import traceback
+        traceback.print_exc()
         return {'actual_count': 0, 'top_sectors': []}
 
 
@@ -346,6 +357,7 @@ def render_broad_market_tab(indices: List[Dict]):
                             columns = [
                                 {'name': 'symbol', 'label': 'Symbol', 'field': 'symbol', 'align': 'left', 'sortable': True},
                                 {'name': 'company_name', 'label': 'Company Name', 'field': 'company_name', 'align': 'left', 'sortable': True},
+                                {'name': 'weight', 'label': 'Weight %', 'field': 'weight', 'align': 'center', 'sortable': True},
                                 {'name': 'sector', 'label': 'Sector', 'field': 'sector', 'align': 'left', 'sortable': True},
                                 {'name': 'industry', 'label': 'Industry', 'field': 'industry', 'align': 'left', 'sortable': True},
                                 {'name': 'series', 'label': 'Series', 'field': 'series', 'align': 'center', 'sortable': True},
