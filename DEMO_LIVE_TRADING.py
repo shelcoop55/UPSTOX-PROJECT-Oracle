@@ -39,8 +39,7 @@ def demo_websocket_streaming():
     """Demo: Real-time Quote Streaming."""
     print_section("FEATURE 1: WEBSOCKET REAL-TIME QUOTE STREAMING", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ OVERVIEW{END}
 Real-time tick-by-tick market data directly from Upstox websocket.
 Ideal for live price monitoring, algorithmic trading, and decision-making.
@@ -61,8 +60,7 @@ Ideal for live price monitoring, algorithmic trading, and decision-making.
   5. Market microstructure analysis
 
 {BOLD}COMMAND EXAMPLES:{END}
-"""
-    )
+""")
 
     examples = [
         (
@@ -87,8 +85,7 @@ Ideal for live price monitoring, algorithmic trading, and decision-making.
         print(f"  📌 {desc}")
         print(f"     {cmd}\n")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}DATABASE STORAGE:{END}
 All ticks automatically stored in `quote_ticks` table:
   • Timestamp, symbol, LTP, bid/ask prices and quantities
@@ -101,16 +98,14 @@ All ticks automatically stored in `quote_ticks` table:
 ➜ Query bid-ask spread analysis
 ➜ Monitor for entry conditions
 ➜ Trigger orders when conditions met (see Feature 2)
-"""
-    )
+""")
 
 
 def demo_order_placement():
     """Demo: Order Placement & Management."""
     print_section("FEATURE 2: ORDER PLACEMENT & MANAGEMENT", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ OVERVIEW{END}
 Complete order lifecycle management - place, modify, cancel, and track orders.
 Supports market, limit, and stop-loss orders with full API integration.
@@ -132,8 +127,7 @@ Supports market, limit, and stop-loss orders with full API integration.
   5. Portfolio rebalancing
 
 {BOLD}COMMAND EXAMPLES:{END}
-"""
-    )
+""")
 
     examples = [
         (
@@ -174,8 +168,7 @@ Supports market, limit, and stop-loss orders with full API integration.
         print(f"  📌 {desc}")
         print(f"     {cmd}\n")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}DATABASE STORAGE:{END}
 All orders stored in `orders` and `bracket_orders` tables:
   • Order ID, symbol, side, quantity, price
@@ -191,16 +184,14 @@ All orders stored in `orders` and `bracket_orders` tables:
 ➜ Set target for profit-taking
 ➜ Monitor order status in real-time
 ➜ Modify if needed (price/quantity)
-"""
-    )
+""")
 
 
 def demo_gtt_orders():
     """Demo: GTT Orders (Good-Till-Triggered)."""
     print_section("FEATURE 3: GTT ORDERS (GOOD-TILL-TRIGGERED)", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ OVERVIEW{END}
 Conditional orders that automatically trigger when price reaches specified levels.
 Perfect for 'set and forget' trading strategies - no manual monitoring needed.
@@ -222,8 +213,7 @@ Perfect for 'set and forget' trading strategies - no manual monitoring needed.
   5. Multi-level entry strategies
 
 {BOLD}COMMAND EXAMPLES:{END}
-"""
-    )
+""")
 
     examples = [
         (
@@ -261,8 +251,7 @@ Perfect for 'set and forget' trading strategies - no manual monitoring needed.
         print(f"  📌 {desc}")
         print(f"     {cmd}\n")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}DATABASE STORAGE:{END}
 All GTT orders stored in `gtt_orders` and `gtt_triggers` tables:
   • GTT ID, symbol, quantity, trigger price
@@ -277,16 +266,14 @@ All GTT orders stored in `gtt_orders` and `gtt_triggers` tables:
 ➜ Orders trigger automatically
 ➜ Modify triggers as market evolves
 ➜ Cancel if conditions no longer apply
-"""
-    )
+""")
 
 
 def demo_account_margin():
     """Demo: Account & Margin Monitoring."""
     print_section("FEATURE 4: ACCOUNT & MARGIN MONITORING", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ OVERVIEW{END}
 Real-time account information including margin, buying power, and balance.
 Critical for risk management and position sizing in live trading.
@@ -308,8 +295,7 @@ Critical for risk management and position sizing in live trading.
   5. Portfolio risk assessment
 
 {BOLD}COMMAND EXAMPLES:{END}
-"""
-    )
+""")
 
     examples = [
         ("Get account profile", "python scripts/account_fetcher.py --action profile"),
@@ -340,8 +326,7 @@ Critical for risk management and position sizing in live trading.
         print(f"  📌 {desc}")
         print(f"     {cmd}\n")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}KEY METRICS EXPLAINED:{END}
 
 Available Margin:
@@ -366,16 +351,14 @@ Buying Power:
 ➜ Alert if margin usage > 80%
 ➜ Cancel or reduce positions if needed
 ➜ Track margin history for analysis
-"""
-    )
+""")
 
 
 def demo_market_depth():
     """Demo: Market Depth Analysis."""
     print_section("FEATURE 5: MARKET DEPTH & ORDER BOOK ANALYSIS", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ OVERVIEW{END}
 Real-time order book data including bid-ask spread, depth levels, and liquidity.
 Essential for analyzing market microstructure and finding optimal entry/exit prices.
@@ -397,8 +380,7 @@ Essential for analyzing market microstructure and finding optimal entry/exit pri
   5. Liquidity-based strategy triggers
 
 {BOLD}COMMAND EXAMPLES:{END}
-"""
-    )
+""")
 
     examples = [
         (
@@ -435,8 +417,7 @@ Essential for analyzing market microstructure and finding optimal entry/exit pri
         print(f"  📌 {desc}")
         print(f"     {cmd}\n")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}DEPTH METRICS EXPLAINED:{END}
 
 Bid-Ask Spread:
@@ -464,16 +445,14 @@ Liquidity Score (0-100):
 ➜ Place order at favorable price
 ➜ Monitor spread as price moves
 ➜ Avoid slippage on large orders
-"""
-    )
+""")
 
 
 def demo_integrated_workflow():
     """Demo: Complete integrated trading workflow."""
     print_section("INTEGRATED LIVE TRADING WORKFLOW", 1)
 
-    print(
-        f"""
+    print(f"""
 {GREEN}✨ REAL-WORLD EXAMPLE: Intraday Trading Setup{END}
 
 This example shows how all 5 features work together for a complete trading system.
@@ -581,8 +560,7 @@ Goal: Trade NIFTY's resistance breakout at 23,500 with proper risk management
   ✓ Margin Used: ₹1,17,500
   ✓ Margin Utilization: 23.5%
   ✓ Trade Duration: 2 hours 15 minutes
-"""
-    )
+""")
 
 
 def main():
@@ -638,8 +616,7 @@ def main():
 
     print(f"\n{BOLD}{'=' * 100}{END}")
     print(f"{BOLD}NEXT STEPS:{END}")
-    print(
-        f"""
+    print(f"""
 1. Set UPSTOX_ACCESS_TOKEN environment variable:
    export UPSTOX_ACCESS_TOKEN="your_token_here"
 
@@ -679,8 +656,7 @@ def main():
 
 {BOLD}Good luck with your live trading! 🚀{END}
 {BOLD}{'=' * 100}{END}
-"""
-    )
+""")
 
 
 if __name__ == "__main__":

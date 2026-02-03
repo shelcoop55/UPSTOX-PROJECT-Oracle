@@ -82,8 +82,7 @@ class GTTOrdersManager:
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS gtt_orders (
                 gtt_id TEXT PRIMARY KEY,
                 symbol TEXT NOT NULL,
@@ -102,11 +101,9 @@ class GTTOrdersManager:
                 remarks TEXT,
                 UNIQUE(gtt_id)
             )
-        """
-        )
+        """)
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS gtt_triggers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 gtt_id TEXT NOT NULL,
@@ -115,8 +112,7 @@ class GTTOrdersManager:
                 message TEXT,
                 FOREIGN KEY(gtt_id) REFERENCES gtt_orders(gtt_id)
             )
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()

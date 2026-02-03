@@ -41,8 +41,7 @@ class DataSyncManager:
         cursor = conn.cursor()
 
         # Sync jobs table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS sync_jobs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 job_name TEXT UNIQUE NOT NULL,
@@ -57,12 +56,10 @@ class DataSyncManager:
                 failure_count INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        """
-        )
+        """)
 
         # Sync history
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS sync_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 job_name TEXT NOT NULL,
@@ -75,12 +72,10 @@ class DataSyncManager:
                 duration_seconds REAL,
                 FOREIGN KEY (job_name) REFERENCES sync_jobs(job_name)
             )
-        """
-        )
+        """)
 
         # Data gaps table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS data_gaps (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 symbol TEXT NOT NULL,
@@ -91,8 +86,7 @@ class DataSyncManager:
                 filled BOOLEAN DEFAULT 0,
                 filled_at DATETIME
             )
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()
@@ -427,8 +421,7 @@ class DataSyncManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT 
                 job_name,
                 enabled,
@@ -439,8 +432,7 @@ class DataSyncManager:
                 failure_count
             FROM sync_jobs
             ORDER BY last_run DESC
-        """
-        )
+        """)
 
         jobs = []
         for row in cursor.fetchall():
