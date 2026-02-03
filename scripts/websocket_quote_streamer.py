@@ -79,8 +79,7 @@ class WebsocketQuoteStreamer:
         c = conn.cursor()
 
         # Create ticks table if not exists
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS quote_ticks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -99,8 +98,7 @@ class WebsocketQuoteStreamer:
                 exchange TEXT,
                 UNIQUE(timestamp, symbol)
             )
-        """
-        )
+        """)
 
         # Create index for faster queries
         c.execute(
@@ -195,7 +193,7 @@ class WebsocketQuoteStreamer:
         if self.reconnect_attempts < self.max_reconnect_attempts:
             self.reconnect_attempts += 1
             # Exponential backoff: 2^n seconds, capped at 300s (5 min), with jitter
-            wait_time = min(300, (2 ** self.reconnect_attempts) + random.uniform(0, 1))
+            wait_time = min(300, (2**self.reconnect_attempts) + random.uniform(0, 1))
             print(
                 f"🔄 Attempting reconnect #{self.reconnect_attempts} in {wait_time:.1f}s..."
             )

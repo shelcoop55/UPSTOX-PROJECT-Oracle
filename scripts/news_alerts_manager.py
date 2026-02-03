@@ -48,6 +48,7 @@ import json
 import sqlite3
 import requests
 import argparse
+import re
 import hashlib
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -160,8 +161,7 @@ class NewsAlertsManager:
         cursor = conn.cursor()
 
         # News articles table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS news_articles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 news_id TEXT UNIQUE,
@@ -180,12 +180,10 @@ class NewsAlertsManager:
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(news_id)
             )
-        """
-        )
+        """)
 
         # News alerts table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS news_alerts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 news_id TEXT,
@@ -197,12 +195,10 @@ class NewsAlertsManager:
                 user_action TEXT,
                 FOREIGN KEY(news_id) REFERENCES news_articles(news_id)
             )
-        """
-        )
+        """)
 
         # Watchlist table (symbols to monitor)
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS news_watchlist (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 symbol TEXT UNIQUE,
@@ -211,12 +207,10 @@ class NewsAlertsManager:
                 enabled BOOLEAN DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        """
-        )
+        """)
 
         # Sentiment history table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS sentiment_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 symbol TEXT,
@@ -229,8 +223,7 @@ class NewsAlertsManager:
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(symbol, date)
             )
-        """
-        )
+        """)
 
         # Create indexes
         cursor.execute(

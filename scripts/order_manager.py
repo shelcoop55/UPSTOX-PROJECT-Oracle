@@ -79,8 +79,7 @@ class OrderManager:
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS orders (
                 order_id TEXT PRIMARY KEY,
                 parent_order_id TEXT,
@@ -103,11 +102,9 @@ class OrderManager:
                 validity TEXT,
                 UNIQUE(order_id)
             )
-        """
-        )
+        """)
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS order_updates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 order_id TEXT NOT NULL,
@@ -118,11 +115,9 @@ class OrderManager:
                 message TEXT,
                 FOREIGN KEY(order_id) REFERENCES orders(order_id)
             )
-        """
-        )
+        """)
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS bracket_orders (
                 bracket_id TEXT PRIMARY KEY,
                 entry_order_id TEXT NOT NULL,
@@ -137,8 +132,7 @@ class OrderManager:
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(bracket_id)
             )
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()

@@ -75,8 +75,7 @@ class HoldingsManager:
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS holdings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -95,11 +94,9 @@ class HoldingsManager:
                 collateral_type TEXT,
                 UNIQUE(timestamp, instrument_token)
         )
-        """
-        )
+        """)
 
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS holdings_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date DATE NOT NULL,
@@ -110,8 +107,7 @@ class HoldingsManager:
                 holdings_count INTEGER,
                 UNIQUE(date)
             )
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()
