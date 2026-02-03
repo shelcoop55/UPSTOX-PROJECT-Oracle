@@ -55,13 +55,15 @@ class NSEIndexUpdater:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        # Create index membership table
+        # Create index membership table with market cap category
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS nse_index_membership (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 symbol TEXT NOT NULL,
                 company_name TEXT,
                 index_name TEXT NOT NULL,
+                index_category TEXT,
+                index_description TEXT,
                 series TEXT,
                 isin TEXT,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -77,6 +79,10 @@ class NSEIndexUpdater:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_index_name ON nse_index_membership(index_name)
         """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_index_category ON nse_index_membership(index_category)
+        """)
 
         # Create sector information table
         cursor.execute("""
@@ -86,12 +92,17 @@ class NSEIndexUpdater:
                 company_name TEXT,
                 sector TEXT,
                 industry TEXT,
+                market_cap_category TEXT,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_sector ON nse_sector_info(sector)
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_market_cap_category ON nse_sector_info(market_cap_category)
         """)
 
         conn.commit()
@@ -200,10 +211,10 @@ class NSEIndexUpdater:
         total_inserted = 0
         total_updated = 0
 
-        for index_name, url in NSE_INDICES.items():
-            data = self.download_index_data(index_name, url)
+        for index_name, index_info in NSE_INDICES.items():
+            data = self.download_index_data(index_name, index_info)
             if data:
-                inserted, updated = self.update_index_membership(index_name, data)
+                inserted, updated = self.update_index_membership(index_name, data, index_info)
                 total_inserted += inserted
                 total_updated += updated
                 time.sleep(2)  # Be nice to NSE servers
