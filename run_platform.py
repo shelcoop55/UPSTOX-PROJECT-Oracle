@@ -677,8 +677,8 @@ def main():
     parser.add_argument("--check", action="store_true", help="Run health check only")
     parser.add_argument("--stop", action="store_true", help="Stop all services")
     parser.add_argument("--setup", action="store_true", help="Run first-time setup only")
-    parser.add_argument("--reinstall", "--clean", action="store_true", 
-                       help="Clean environment and reinstall (removes .venv, __pycache__, and .pyc files)")
+    parser.add_argument("--reinstall", "--clean", dest="reinstall", action="store_true",
+                        help="Clean environment and reinstall (removes .venv, __pycache__, and .pyc files)")
     
     args = parser.parse_args()
     
