@@ -87,8 +87,7 @@ class StrategyRunner:
         cursor = conn.cursor()
 
         # Strategy configurations
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS strategies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT UNIQUE NOT NULL,
@@ -100,12 +99,10 @@ class StrategyRunner:
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        """
-        )
+        """)
 
         # Trading signals
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS trading_signals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 strategy_name TEXT NOT NULL,
@@ -124,12 +121,10 @@ class StrategyRunner:
                 pnl REAL,
                 FOREIGN KEY (strategy_name) REFERENCES strategies(name)
             )
-        """
-        )
+        """)
 
         # Strategy performance
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS strategy_performance (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 strategy_name TEXT NOT NULL,
@@ -146,8 +141,7 @@ class StrategyRunner:
                 max_drawdown REAL,
                 FOREIGN KEY (strategy_name) REFERENCES strategies(name)
             )
-        """
-        )
+        """)
 
         conn.commit()
         conn.close()
@@ -582,9 +576,7 @@ class StrategyRunner:
             WHERE strategy_name = ?
             AND executed = 1
             AND signal_time >= datetime('now', '-{} days')
-        """.format(
-                days
-            ),
+        """.format(days),
             (strategy_name,),
         )
 

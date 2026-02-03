@@ -5,8 +5,7 @@ Quick Summary - All Project Files and Components
 Displays overview of created documentation, tests, and fetchers.
 """
 
-print(
-    """
+print("""
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                    UPSTOX PROJECT - CREATION SUMMARY                      ║
 ║                     Documentation & Test Suite                            ║
@@ -440,5 +439,4 @@ Test Coverage: 52 comprehensive test cases
 API Endpoints Documented: 50+
 
 ═════════════════════════════════════════════════════════════════════════════
-"""
-)
+""")

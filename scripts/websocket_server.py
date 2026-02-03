@@ -51,7 +51,7 @@ def validate_symbol(symbol: str) -> bool:
     """Validate symbol format (alphanumeric, max 20 chars)"""
     if not symbol or not isinstance(symbol, str):
         return False
-    return bool(re.match(r'^[A-Z0-9]{1,20}$', symbol))
+    return bool(re.match(r"^[A-Z0-9]{1,20}$", symbol))
 
 
 def validate_expiry_date(expiry_date: str) -> bool:
@@ -61,7 +61,7 @@ def validate_expiry_date(expiry_date: str) -> bool:
     if not isinstance(expiry_date, str):
         return False
     try:
-        datetime.strptime(expiry_date, '%Y-%m-%d')
+        datetime.strptime(expiry_date, "%Y-%m-%d")
         return True
     except (ValueError, TypeError):
         return False
@@ -90,15 +90,20 @@ def handle_subscribe_options(data):
     if not data or not isinstance(data, dict):
         emit("error", {"message": "Invalid request data"})
         return
-    
+
     symbol = data.get("symbol", "NIFTY")
     expiry_date = data.get("expiry_date")
 
     # Validate symbol
     if not validate_symbol(symbol):
-        emit("error", {"message": "Invalid symbol format. Must be alphanumeric, max 20 characters"})
+        emit(
+            "error",
+            {
+                "message": "Invalid symbol format. Must be alphanumeric, max 20 characters"
+            },
+        )
         return
-    
+
     # Validate expiry date
     if not validate_expiry_date(expiry_date):
         emit("error", {"message": "Invalid expiry date format. Must be YYYY-MM-DD"})
@@ -141,14 +146,14 @@ def handle_unsubscribe_options(data):
     if not data or not isinstance(data, dict):
         emit("error", {"message": "Invalid request data"})
         return
-    
+
     symbol = data.get("symbol", "NIFTY")
-    
+
     # Validate symbol
     if not validate_symbol(symbol):
         emit("error", {"message": "Invalid symbol format"})
         return
-    
+
     room = f"options_{symbol}"
     leave_room(room)
     active_subscriptions["options"].discard(request.sid)
@@ -161,9 +166,9 @@ def handle_subscribe_quote(data):
     if not data or not isinstance(data, dict):
         emit("error", {"message": "Invalid request data"})
         return
-    
+
     symbol = data.get("symbol", "NIFTY")
-    
+
     # Validate symbol
     if not validate_symbol(symbol):
         emit("error", {"message": "Invalid symbol format"})

@@ -2,6 +2,7 @@
 """
 Quick test for candle fetcher - validates setup
 """
+
 import sqlite3
 import sys
 import os
@@ -52,7 +53,9 @@ try:
         candle_count = cur.fetchone()[0]
         print(f"   ✅ Existing candles: {candle_count}")
     except:
-        print(f"   ℹ️  Candles table doesn't exist yet (will be created on first fetch)")
+        print(
+            f"   ℹ️  Candles table doesn't exist yet (will be created on first fetch)"
+        )
 
     conn.close()
 except Exception as e:
@@ -64,12 +67,10 @@ print("\n2️⃣  Checking sample symbols...")
 try:
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute(
-        """
+    cur.execute("""
         SELECT symbol, instrument_key FROM exchange_listings 
         WHERE segment='NSE_EQ' LIMIT 5
-    """
-    )
+    """)
     symbols = cur.fetchall()
     conn.close()
 
