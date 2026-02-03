@@ -3,7 +3,7 @@ Corporate Announcements Page
 Real-time NSE corporate filings, financial results, events, and board meetings.
 """
 
-from nicegui import ui, run, app
+from nicegui import ui
 from ..common import Components
 import sqlite3
 import asyncio
