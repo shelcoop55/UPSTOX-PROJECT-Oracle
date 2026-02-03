@@ -31,7 +31,8 @@ def print_section(section_num: int, title: str):
 def main():
     print_header("📰 NEWS & CORPORATE ANNOUNCEMENTS DEMO")
 
-    print("""
+    print(
+        """
 This demonstration covers THREE powerful features for staying informed about market-moving events:
 
 1️⃣  CORPORATE ANNOUNCEMENTS - Track company-specific events
@@ -43,7 +44,8 @@ Each feature helps you make better-informed trading decisions by providing:
 - Sentiment analysis for positioning
 - Automated alerts for critical news
 - Historical tracking for pattern recognition
-    """)
+    """
+    )
 
     # ============================================================================
     # FEATURE 1: CORPORATE ANNOUNCEMENTS
@@ -51,7 +53,8 @@ Each feature helps you make better-informed trading decisions by providing:
 
     print_section(1, "CORPORATE ANNOUNCEMENTS FETCHER")
 
-    print("""
+    print(
+        """
 📊 WHAT IT DOES:
    Tracks company-specific events that directly impact stock prices:
    - Quarterly earnings releases (Q1, Q2, Q3, Q4)
@@ -67,7 +70,8 @@ Each feature helps you make better-informed trading decisions by providing:
    - Avoid getting caught in earnings volatility
    - Plan GTT orders around key dates
    - Adjust stop-losses before high-impact events
-    """)
+    """
+    )
 
     print("\n📋 COMMAND EXAMPLES:\n")
 
@@ -111,7 +115,8 @@ Each feature helps you make better-informed trading decisions by providing:
         print(f"   {cmd}\n")
 
     print("\n📊 SAMPLE OUTPUT:\n")
-    print("""
+    print(
+        """
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 UPCOMING CORPORATE EVENTS
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -123,10 +128,12 @@ RELIANCE     | BOARD_MEETING        | 2026-02-15   | 🟡 MEDIUM| 15 days    | B
 HDFC         | EARNINGS             | 2026-02-12   | 🔴 HIGH  | 12 days    | Q3 FY26 Results
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 Total events: 4
-    """)
+    """
+    )
 
     print("\n🎯 REAL-WORLD WORKFLOW:\n")
-    print("""
+    print(
+        """
 SCENARIO: You hold 100 shares of INFY @ ₹1,800
 
 STEP 1: Check earnings date (2 weeks in advance)
@@ -152,7 +159,8 @@ STEP 5: After earnings (Feb 10):
    - Monitor news sentiment
    - Check actual vs estimated results
    - Decide on re-entry if exited
-    """)
+    """
+    )
 
     # ============================================================================
     # FEATURE 2: ECONOMIC CALENDAR
@@ -160,7 +168,8 @@ STEP 5: After earnings (Feb 10):
 
     print_section(2, "ECONOMIC CALENDAR FETCHER")
 
-    print("""
+    print(
+        """
 📅 WHAT IT DOES:
    Tracks macro events that affect overall market sentiment:
    - RBI Monetary Policy Committee decisions (repo rate)
@@ -177,7 +186,8 @@ STEP 5: After earnings (Feb 10):
    - Inflation data affects rate expectations
    - Plan market-wide hedges around these dates
    - Reduce leverage before high-impact events
-    """)
+    """
+    )
 
     print("\n📋 COMMAND EXAMPLES:\n")
 
@@ -225,7 +235,8 @@ STEP 5: After earnings (Feb 10):
         print(f"   {cmd}\n")
 
     print("\n📊 SAMPLE OUTPUT:\n")
-    print("""
+    print(
+        """
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 RBI MONETARY POLICY CALENDAR
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -236,10 +247,12 @@ Date         | Country  | Event                               | Impact   | Days 
 2026-06-08   | INDIA    | RBI Monetary Policy Decision        | 🔴 HIGH  | 129 days   | CENTRAL_BANK
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 Total events: 3
-    """)
+    """
+    )
 
     print("\n🎯 REAL-WORLD WORKFLOW:\n")
-    print("""
+    print(
+        """
 SCENARIO: Managing a ₹10L portfolio, RBI policy meeting in 7 days
 
 STEP 1: Check calendar for upcoming events
@@ -270,7 +283,8 @@ STEP 5: Post-announcement (Feb 7 afternoon):
    - Assess market reaction
    - Re-enter positions with reduced risk
    - Align portfolio with new rate environment
-    """)
+    """
+    )
 
     # ============================================================================
     # FEATURE 3: NEWS ALERTS
@@ -278,7 +292,8 @@ STEP 5: Post-announcement (Feb 7 afternoon):
 
     print_section(3, "NEWS ALERTS MANAGER")
 
-    print("""
+    print(
+        """
 📰 WHAT IT DOES:
    Real-time monitoring of market news with intelligent analysis:
    - Company-specific news (management changes, contracts won)
@@ -295,7 +310,8 @@ STEP 5: Post-announcement (Feb 7 afternoon):
    - Avoid holding during negative news
    - Capitalize on positive sentiment surges
    - Automated monitoring = never miss critical news
-    """)
+    """
+    )
 
     print("\n📋 COMMAND EXAMPLES:\n")
 
@@ -331,7 +347,8 @@ STEP 5: Post-announcement (Feb 7 afternoon):
         print(f"   {cmd}\n")
 
     print("\n📊 SAMPLE OUTPUT (Latest News):\n")
-    print("""
+    print(
+        """
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 LATEST NEWS - INFY
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -353,10 +370,12 @@ LATEST NEWS - INFY
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 Total articles: 3
-    """)
+    """
+    )
 
     print("\n📊 SAMPLE OUTPUT (Sentiment Analysis):\n")
-    print("""
+    print(
+        """
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 SENTIMENT ANALYSIS - INFY
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -373,10 +392,12 @@ Total Articles: 15
    Rating: BULLISH
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-    """)
+    """
+    )
 
     print("\n🎯 REAL-WORLD WORKFLOW:\n")
-    print("""
+    print(
+        """
 SCENARIO: Monitoring INFY for entry opportunity
 
 STEP 1: Add to watchlist
@@ -405,7 +426,8 @@ STEP 6: Sentiment shift detection:
    - Was BULLISH (70% positive) → Now BEARISH (60% negative)
    - Multiple negative articles in 24 hours
    - Action: Exit position, reassess fundamentals
-    """)
+    """
+    )
 
     # ============================================================================
     # INTEGRATED WORKFLOW
@@ -413,15 +435,18 @@ STEP 6: Sentiment shift detection:
 
     print_section(4, "INTEGRATED WORKFLOW - COMPLETE EXAMPLE")
 
-    print("""
+    print(
+        """
 🎯 SCENARIO: Professional trader managing ₹20L portfolio
 
 GOAL: Maximize returns while avoiding event-driven volatility
 HOLDINGS: INFY (100 shares), TCS (50 shares), RELIANCE (20 shares)
-    """)
+    """
+    )
 
     print("\n📅 MORNING ROUTINE (9:00 AM - Before Market Open):\n")
-    print("""
+    print(
+        """
 1. CHECK ECONOMIC CALENDAR (market-wide events)
    → python scripts/economic_calendar_fetcher.py --action calendar --days 7
    
@@ -453,10 +478,12 @@ HOLDINGS: INFY (100 shares), TCS (50 shares), RELIANCE (20 shares)
    DECISION:
    - INFY: Favorable for holding/adding
    - TCS: Monitor closely, reduce size if sentiment turns
-    """)
+    """
+    )
 
     print("\n📊 DURING MARKET HOURS (9:15 AM - 3:30 PM):\n")
-    print("""
+    print(
+        """
 TERMINAL 1: Monitor breaking news (every 5 minutes)
    → python scripts/news_alerts_manager.py --action monitor --symbols INFY,TCS,RELIANCE --interval 300
 
@@ -485,10 +512,12 @@ TERMINAL 3: Real-time quotes
    5. Update sentiment:
       → Wait 24 hours for full news cycle
       → Re-check sentiment before considering re-entry
-    """)
+    """
+    )
 
     print("\n🌙 POST-MARKET ANALYSIS (After 3:30 PM):\n")
-    print("""
+    print(
+        """
 1. REVIEW NEWS IMPACT
    → python scripts/news_alerts_manager.py --action latest --symbol INFY --limit 20
    
@@ -514,7 +543,8 @@ TERMINAL 3: Real-time quotes
    - Monitor INFY sentiment recovery
    - Hold TCS until ex-dividend
    - Reduce overall exposure before RBI policy
-    """)
+    """
+    )
 
     # ============================================================================
     # KEY METRICS & SUMMARY
@@ -522,7 +552,8 @@ TERMINAL 3: Real-time quotes
 
     print_section(5, "KEY METRICS & BEST PRACTICES")
 
-    print("""
+    print(
+        """
 📊 EVENT IMPACT LEVELS (Historical Data):
 
 HIGH-IMPACT EVENTS (2-10% market/stock movement):
@@ -543,10 +574,12 @@ LOW-IMPACT EVENTS (<0.5% movement):
    • Minor Regulatory Filings
    • AGM/EGM Announcements
    • Routine Board Meetings
-    """)
+    """
+    )
 
     print("\n🛡️ RISK MANAGEMENT RULES:\n")
-    print("""
+    print(
+        """
 BEFORE HIGH-IMPACT EVENTS:
    1. Reduce position size by 30-50%
    2. Widen stop-losses by 50%
@@ -565,10 +598,12 @@ AFTER EVENT ANNOUNCEMENTS:
    2. Check sentiment shift
    3. Adjust positions based on outcome
    4. Look for mean reversion opportunities
-    """)
+    """
+    )
 
     print("\n⏰ ALERT TIMING GUIDELINES:\n")
-    print("""
+    print(
+        """
 EARNINGS ANNOUNCEMENTS:
    • 7 days before: Review position, plan adjustments
    • 3 days before: Reduce size if uncertain
@@ -583,10 +618,12 @@ BREAKING NEWS:
    • Real-time monitoring during market hours
    • 5-minute check intervals for active positions
    • Immediate action on HIGH-PRIORITY alerts
-    """)
+    """
+    )
 
     print("\n📈 SENTIMENT-BASED TRADING:\n")
-    print("""
+    print(
+        """
 BULLISH SENTIMENT (>60% positive):
    ✅ Safe to hold existing positions
    ✅ Consider adding on dips
@@ -604,7 +641,8 @@ BEARISH SENTIMENT (<40% positive):
    🔴 Avoid new longs
    🔴 Consider shorts (if experienced)
    🔴 Wait for sentiment reversal
-    """)
+    """
+    )
 
     # ============================================================================
     # CONCLUSION
@@ -612,7 +650,8 @@ BEARISH SENTIMENT (<40% positive):
 
     print_section(6, "NEXT STEPS")
 
-    print("""
+    print(
+        """
 ✅ YOU NOW HAVE THREE POWERFUL INFORMATION TOOLS:
 
 1️⃣  Corporate Announcements Fetcher (scripts/corporate_announcements_fetcher.py)
@@ -658,7 +697,8 @@ TERMINAL 3: Trading operations
    5. Integrate with your existing trading strategy
 
 Remember: Information = Edge in trading. Use these tools to stay ahead! 📊
-    """)
+    """
+    )
 
     print("\n" + "=" * 100)
     print("  END OF DEMO")

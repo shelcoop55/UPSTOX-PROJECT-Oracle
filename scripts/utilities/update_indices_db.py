@@ -15,7 +15,8 @@ def create_metadata_table():
     cursor = conn.cursor()
 
     # improved schema to hold index memberships and sector
-    cursor.execute("""
+    cursor.execute(
+        """
     CREATE TABLE IF NOT EXISTS stock_metadata (
         symbol TEXT PRIMARY KEY,
         company_name TEXT,
@@ -25,7 +26,8 @@ def create_metadata_table():
         is_nifty_bank BOOLEAN DEFAULT 0,
         last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-    """)
+    """
+    )
     conn.commit()
     conn.close()
     print("✅ Metadata table ready.")

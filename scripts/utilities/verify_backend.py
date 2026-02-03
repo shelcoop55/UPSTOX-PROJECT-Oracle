@@ -66,11 +66,13 @@ try:
     # 5. Check latest data
     print("\n[5] LATEST DATA")
     print("-" * 80)
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT symbol, MAX(timestamp) as latest_ts
         FROM candles_new
         GROUP BY symbol
-    """)
+    """
+    )
     for sym, ts in cursor.fetchall():
         dt = datetime.fromtimestamp(ts)
         print(f"   {sym:10} latest: {dt.date()}")
