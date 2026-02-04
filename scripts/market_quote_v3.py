@@ -37,12 +37,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from scripts.auth_manager import AuthManager
 from scripts.error_handler import with_retry, RateLimitError
 from scripts.database_pool import get_db_pool
+from scripts.auth_headers_optional_mixin import OptionalAuthHeadersMixin
 import requests
 
 logger = logging.getLogger(__name__)
 
 
-class MarketQuoteV3:
+class MarketQuoteV3(OptionalAuthHeadersMixin):
     """
     Market quote fetcher using v3 API with intelligent caching.
     """
@@ -78,22 +79,6 @@ class MarketQuoteV3:
 
         self._init_database()
         logger.info(f"✅ MarketQuoteV3 initialized (v3_enabled: {use_v3})")
-
-    def _get_headers(self) -> Dict[str, str]:
-        """Get authorization headers"""
-        token = self.auth_manager.get_valid_token()
-        if not token:
-            logger.warning("No valid token available")
-            return {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-
-        return {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
 
     def _init_database(self):
         """Initialize database for quote caching"""

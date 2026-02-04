@@ -49,6 +49,7 @@ from typing import Optional, List, Dict, Any
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts.auth_manager import AuthManager
+from scripts.auth_header_utils import build_bearer_headers
 
 
 def ensure_token_valid():
@@ -199,7 +200,7 @@ def get_available_expiries(underlying_symbol: str) -> List[str]:
     """
     token = ensure_token_valid()
 
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    headers = build_bearer_headers(token, include_json=True)
 
     # Use Expired Instruments API
     # Endpoint: /v2/expired-instruments/expiries
@@ -251,7 +252,7 @@ def fetch_expired_future_contracts(
     """
     token = ensure_token_valid()
 
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    headers = build_bearer_headers(token, include_json=True)
 
     # Use Expired Instruments API
     # Endpoint: /v2/expired-instruments/future/contract
@@ -308,7 +309,7 @@ def fetch_expired_option_contracts(
     """
     token = ensure_token_valid()
 
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    headers = build_bearer_headers(token, include_json=True)
 
     # Use Expired Instruments API
     # Endpoint: /v2/expired-instruments/option/contract
@@ -788,7 +789,7 @@ def fetch_expired_historical_candles(
         print(f"Token Error: {e}")
         return []
 
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    headers = build_bearer_headers(token, include_json=True)
 
     # API Format: /expired-instruments/historical-candle/{instrument_key}/{interval}/{to_date}/{from_date}
     # Important: Upstox 'to_date' comes BEFORE 'from_date' in path for historical V2

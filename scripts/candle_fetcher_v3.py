@@ -33,12 +33,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from scripts.auth_manager import AuthManager
 from scripts.error_handler import with_retry, RateLimitError
 from scripts.database_pool import get_db_pool
+from scripts.auth_headers_optional_mixin import OptionalAuthHeadersMixin
 import requests
 
 logger = logging.getLogger(__name__)
 
 
-class CandleFetcherV3:
+class CandleFetcherV3(OptionalAuthHeadersMixin):
     """
     Candle fetcher using v3 API with caching and performance optimizations.
     """
@@ -73,22 +74,6 @@ class CandleFetcherV3:
 
         self._init_database()
         logger.info(f"✅ CandleFetcherV3 initialized (v3_enabled: {use_v3})")
-
-    def _get_headers(self) -> Dict[str, str]:
-        """Get authorization headers"""
-        token = self.auth_manager.get_valid_token()
-        if not token:
-            logger.warning("No valid token available")
-            return {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-
-        return {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
 
     def _init_database(self):
         """Initialize database for candle caching"""

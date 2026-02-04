@@ -29,17 +29,20 @@ import sqlite3
 class UpstoxLiveAPI:
     """Live Upstox API integration with real-time data"""
 
-    BASE_URL = "https://api.upstox.com/v2"
-
     def __init__(self):
         self.auth_manager = AuthManager()
         self.session = requests.Session()
 
+    def _log_no_token(self, message: str, level: str = "warning"):
+        if level == "error":
+            logger.error(message)
+        else:
+            logger.warning(message)
+
     def _get_headers(self) -> Dict[str, str]:
-        """Get authorization headers"""
         token = self.auth_manager.get_valid_token()
         if not token:
-            logger.warning("No valid Upstox token available")
+            self._log_no_token("No valid Upstox token available", level="warning")
             return {}
 
         return {
@@ -48,17 +51,22 @@ class UpstoxLiveAPI:
             "Authorization": f"Bearer {token}",
         }
 
+    def _build_url(self, endpoint: str) -> str:
+        return f"{self.BASE_URL}{endpoint}"
+
+    def _get(self, endpoint: str, timeout: int):
+        headers = self._get_headers()
+        if not headers:
+            return None
+        return self.session.get(self._build_url(endpoint), headers=headers, timeout=timeout)
+
     @with_retry(max_attempts=2)
     def get_profile(self) -> Optional[Dict]:
         """Get user profile"""
         try:
-            headers = self._get_headers()
-            if not headers:
+            response = self._get("/user/profile", timeout=10)
+            if response is None:
                 return None
-
-            response = self.session.get(
-                f"{self.BASE_URL}/user/profile", headers=headers, timeout=10
-            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -80,15 +88,9 @@ class UpstoxLiveAPI:
     def get_holdings(self) -> List[Dict]:
         """Get user holdings"""
         try:
-            headers = self._get_headers()
-            if not headers:
+            response = self._get("/portfolio/long-term-holdings", timeout=10)
+            if response is None:
                 return []
-
-            response = self.session.get(
-                f"{self.BASE_URL}/portfolio/long-term-holdings",
-                headers=headers,
-                timeout=10,
-            )
 
             if response.status_code == 200:
                 data = response.json()
@@ -107,15 +109,9 @@ class UpstoxLiveAPI:
     def get_positions(self) -> Dict[str, List[Dict]]:
         """Get open positions"""
         try:
-            headers = self._get_headers()
-            if not headers:
+            response = self._get("/portfolio/short-term-positions", timeout=10)
+            if response is None:
                 return {"day": [], "net": []}
-
-            response = self.session.get(
-                f"{self.BASE_URL}/portfolio/short-term-positions",
-                headers=headers,
-                timeout=10,
-            )
 
             if response.status_code == 200:
                 data = response.json()

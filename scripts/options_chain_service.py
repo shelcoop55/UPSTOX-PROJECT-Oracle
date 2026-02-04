@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scripts.auth_manager import AuthManager
+from scripts.auth_header_utils import build_bearer_headers
 
 # Configure logging
 logging.basicConfig(
@@ -46,7 +47,7 @@ class OptionsChainService:
             if not token:
                 return []
 
-            headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+            headers = build_bearer_headers(token, include_json=True)
             url = f"{self.base_url}/option/contract"
             params = {"instrument_key": instrument_key}
 
@@ -74,7 +75,7 @@ class OptionsChainService:
 
             # v3 endpoint
             url = "https://api.upstox.com/v3/market-quote/option-greek"
-            headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+            headers = build_bearer_headers(token, include_json=True)
 
             # API supports comma separated keys
             keys_str = ",".join(instrument_keys)
@@ -170,7 +171,7 @@ class OptionsChainService:
                 return self._mock_option_chain(symbol, expiry_date, market_open)
 
             # Construct API request
-            headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+            headers = build_bearer_headers(token, include_json=True)
 
             # Map symbol to key
             inst_key = self._get_instrument_key(symbol)
