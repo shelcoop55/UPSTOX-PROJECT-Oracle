@@ -34,32 +34,34 @@ def authorize_portfolio_stream():
         logger.info(f"[TraceID: {g.trace_id}] WebSocket feed authorization request")
 
         service = FeedService()
-        auth_data = service.authorize_portfolio_stream(
-            update_types=request.args.get("update_types")
-        )
+        update_types = request.args.get("update_types")
+        auth_data = service.authorize_portfolio_stream(update_types=update_types)
         access_token = service.auth_manager.get_valid_token()
 
-            return jsonify(
-                {
-                    "success": True,
-                    "data": {
-                        "authorized_redirect_uri": auth_data.get(
-                            "authorized_redirect_uri"
-                        ),
-                        "websocket_url": auth_data.get(
-                            "authorized_redirect_uri"
-                        ),  # Alias for clarity
-                        "access_token": access_token,
-                        "instructions": {
-                            "1": "Use the websocket_url to establish WebSocket connection",
-                            "2": "Send access_token in connection parameters",
-                            "3": "Subscribe to portfolio stream for real-time updates",
-                            "4": "See /docs/WEBSOCKET_IMPLEMENTATION_PLAN.md for details",
-                        },
+        logger.debug(
+            f"[TraceID: {g.trace_id}] Portfolio stream auth: update_types={update_types}, "
+            f"keys={list(auth_data.keys()) if isinstance(auth_data, dict) else type(auth_data)}"
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "data": {
+                    "authorized_redirect_uri": auth_data.get("authorized_redirect_uri"),
+                    "websocket_url": auth_data.get(
+                        "authorized_redirect_uri"
+                    ),  # Alias for clarity
+                    "access_token": access_token,
+                    "instructions": {
+                        "1": "Use the websocket_url to establish WebSocket connection",
+                        "2": "Send access_token in connection parameters",
+                        "3": "Subscribe to portfolio stream for real-time updates",
+                        "4": "See /docs/WEBSOCKET_IMPLEMENTATION_PLAN.md for details",
                     },
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
+                },
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
     except Exception as e:
         logger.error(
@@ -90,24 +92,27 @@ def authorize_market_data_feed():
         auth_data = service.authorize_market_data_feed()
         access_token = service.auth_manager.get_valid_token()
 
-            return jsonify(
-                {
-                    "success": True,
-                    "data": {
-                        "authorized_redirect_uri": auth_data.get(
-                            "authorized_redirect_uri"
-                        ),
-                        "websocket_url": auth_data.get("authorized_redirect_uri"),
-                        "access_token": access_token,
-                        "instructions": {
-                            "1": "Use the websocket_url for market data WebSocket connection",
-                            "2": "Subscribe to specific instruments for real-time quotes",
-                            "3": "See WebSocket documentation for subscription format",
-                        },
+        logger.debug(
+            f"[TraceID: {g.trace_id}] Market data auth: "
+            f"keys={list(auth_data.keys()) if isinstance(auth_data, dict) else type(auth_data)}"
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "data": {
+                    "authorized_redirect_uri": auth_data.get("authorized_redirect_uri"),
+                    "websocket_url": auth_data.get("authorized_redirect_uri"),
+                    "access_token": access_token,
+                    "instructions": {
+                        "1": "Use the websocket_url for market data WebSocket connection",
+                        "2": "Subscribe to specific instruments for real-time quotes",
+                        "3": "See WebSocket documentation for subscription format",
                     },
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
+                },
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
     except Exception as e:
         logger.error(

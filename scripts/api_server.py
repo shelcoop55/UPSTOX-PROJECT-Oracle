@@ -87,21 +87,27 @@ def inject_trace_id():
 @app.after_request
 def log_response(response):
     """Log response and attach trace ID header"""
-    logger.info(f"[TraceID: {g.trace_id}] Response: {response.status_code}")
-    response.headers["X-Trace-ID"] = g.trace_id
+    trace_id = getattr(g, "trace_id", None) or "unknown"
+    logger.info(f"[TraceID: {trace_id}] Response: {response.status_code}")
+    response.headers["X-Trace-ID"] = trace_id
     return response
 
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Global exception handler with state dump"""
+    trace_id = getattr(g, "trace_id", None)
+    if not trace_id:
+        trace_id = str(uuid.uuid4())[:8]
+        g.trace_id = trace_id
+
     logger.error(
-        f"[TraceID: {g.trace_id}] Unhandled exception: {str(e)}", exc_info=True
+        f"[TraceID: {trace_id}] Unhandled exception: {str(e)}", exc_info=True
     )
 
     # Dump state for debugging
     error_dump = {
-        "trace_id": g.trace_id,
+        "trace_id": trace_id,
         "error": str(e),
         "type": type(e).__name__,
         "path": request.path,
@@ -112,19 +118,19 @@ def handle_exception(e):
     dump_dir = Path("debug_dumps")
     dump_dir.mkdir(exist_ok=True)
     dump_file = (
-        dump_dir / f"error_{g.trace_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        dump_dir / f"error_{trace_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     )
 
     with open(dump_file, "w") as f:
         json.dump(error_dump, f, indent=2, default=str)
 
-    logger.error(f"[TraceID: {g.trace_id}] Error state dumped to {dump_file}")
+    logger.error(f"[TraceID: {trace_id}] Error state dumped to {dump_file}")
 
     return (
         jsonify(
             {
                 "error": str(e),
-                "trace_id": g.trace_id,
+                "trace_id": trace_id,
                 "timestamp": datetime.now().isoformat(),
             }
         ),

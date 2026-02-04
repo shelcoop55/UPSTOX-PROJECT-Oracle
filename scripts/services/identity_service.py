@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional
 import sqlite3
 import requests
 
-from base_fetcher import UpstoxFetcher
+from scripts.base_fetcher import UpstoxFetcher
 from scripts.auth_helper import auth
 from scripts.config_loader import get_api_base_url
 from scripts.logger_config import get_logger
