@@ -1,6 +1,7 @@
 from nicegui import ui, run
 from ..common import Components
 from ..services.movers import MarketMoversService
+from ..services.websocket_service import get_websocket_service
 import asyncio
 
 # Service Instance
@@ -273,11 +274,85 @@ def render_gainers_losers_widget():
         ui.timer(0.1, load_active_tab, once=True)
 
 
+def render_websocket_status():
+    """Live WebSocket connection status widget"""
+    ws = get_websocket_service()
+    
+    with Components.card():
+        with ui.row().classes("w-full items-center justify-between"):
+            ui.label("🔌 WebSocket Status").classes("text-lg font-bold")
+            status_badge = ui.badge("", color="orange").classes("text-xs")
+        
+        connect_btn = ui.button("Connect", on_click=None, icon="power")
+        quote_label = ui.label("Waiting for data...").classes("text-sm text-slate-400 mt-2")
+        
+        async def connect_ws():
+            """Connect to WebSocket server"""
+            connect_btn.set_text("Connecting...")
+            connect_btn.disable()
+            
+            success = await ws.connect()
+            
+            if success:
+                status_badge.set_text("Connected")
+                status_badge.props("color=green")
+                connect_btn.set_text("Connected")
+                connect_btn.props("color=green")
+                ui.notify("✅ WebSocket connected!", type="positive")
+                
+                # Subscribe to NIFTY quotes as demo
+                await ws.subscribe_quote("NIFTY")
+            else:
+                status_badge.set_text("Failed")
+                status_badge.props("color=red")
+                connect_btn.set_text("Retry")
+                connect_btn.enable()
+                ui.notify("❌ WebSocket connection failed", type="negative")
+        
+        async def handle_quote_update(data):
+            """Handle incoming quote updates"""
+            symbol = data.get('symbol', 'N/A')
+            quote_data = data.get('data', {})
+            
+            # Update the label with live data
+            ltp = quote_data.get('ltp', 'N/A')
+            change = quote_data.get('net_change', 0)
+            change_pct = quote_data.get('change_pct', 0)
+            
+            color = "text-green-400" if change >= 0 else "text-red-400"
+            quote_label.text = f"{symbol}: ₹{ltp} "
+            quote_label.classes(f"text-lg font-mono {color}")
+        
+        # Set callback
+        ws.on_quote_update = handle_quote_update
+        
+        # Set button click handler
+        connect_btn.on_click(lambda: asyncio.create_task(connect_ws()))
+        
+        # Update status
+        if ws.connected:
+            status_badge.set_text("Connected")
+            status_badge.props("color=green")
+            connect_btn.set_text("Connected")
+            connect_btn.props("color=green")
+            connect_btn.disable()
+        else:
+            status_badge.set_text("Disconnected")
+
+
 def render_page(state):
     Components.section_header("Dashboard", "Real-time portfolio overview", "analytics")
 
     # Stats Grid
     stats_widget(state)
+
+    # WebSocket Status Widget
+    with ui.row().classes("w-full gap-4 mt-6"):
+        with ui.column().classes("flex-1"):
+            render_websocket_status()
+        with ui.column().classes("flex-1"):
+            # Placeholder for another widget
+            pass
 
     # Full Width Layout
     with ui.column().classes("w-full mt-6"):
