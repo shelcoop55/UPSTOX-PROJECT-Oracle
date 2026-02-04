@@ -6,7 +6,7 @@ import asyncio
 
 # Import Service
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from scripts.options_chain_service import OptionsChainService
+from scripts.legacy.options_chain_service import OptionsChainService
 
 service = OptionsChainService()
 
