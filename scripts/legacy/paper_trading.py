@@ -11,14 +11,9 @@ from datetime import datetime
 import json
 import uuid
 
-try:
-    from scripts.risk_manager import RiskManager
-    from scripts.performance_analytics import PerformanceAnalytics
-    from scripts.database_validator import DatabaseValidator
-except ImportError:
-    from risk_manager import RiskManager
-    from performance_analytics import PerformanceAnalytics
-    from database_validator import DatabaseValidator
+from scripts.metrics.risk_manager import RiskManager
+from scripts.metrics.performance_analytics import PerformanceAnalytics
+from scripts.db.database_validator import DatabaseValidator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

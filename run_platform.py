@@ -85,7 +85,7 @@ class PlatformLauncher:
             },
             "oauth": {
                 "name": "OAuth Server",
-                "command": ["python", "scripts/oauth_server.py"],
+                "command": ["python", "scripts/api/oauth_server.py"],
                 "port": 5050,
                 "health_endpoint": "http://localhost:5050/debug/config",
                 "log_file": self.logs_dir / "oauth_server.log"
