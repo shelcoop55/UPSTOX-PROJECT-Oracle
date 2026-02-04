@@ -14,7 +14,7 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).parent.parent.parent / "market_data.db"
 import os
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000"
+API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 
 # ============================================================================

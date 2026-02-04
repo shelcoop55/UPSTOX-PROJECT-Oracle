@@ -14,7 +14,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 import os
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000/api"
+API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000") + "/api"
 
 
 def render_page(state):
