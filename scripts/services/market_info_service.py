@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.auth_manager import AuthManager
 from scripts.error_handler import with_retry
-from scripts.database_pool import get_db_pool
+from scripts.db.database_pool import get_db_pool
 import requests
 
 logger = logging.getLogger(__name__)

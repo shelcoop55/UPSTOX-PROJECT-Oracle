@@ -172,4 +172,4 @@ if __name__ == "__main__":
         webbrowser.open(oauth_url)
 
     # Use port 5050 to avoid macOS AirPlay (5000) and common dev ports (8000/8080)
-    app.run(host="0.0.0.0", port=5050, debug=True)
+    app.run(host="0.0.0.0", port=5050, debug=False)
