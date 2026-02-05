@@ -499,6 +499,212 @@ class UpstoxClient:
         logger.info(f"Fetched {len(candles)} candles")
         
         return candles
+    
+    # ========================================================================
+    # Orders APIs
+    # ========================================================================
+    
+    def get_orders(self) -> List[Dict[str, Any]]:
+        """
+        Get list of all orders for the day.
+        
+        Returns:
+            List of orders with details
+            
+        Example:
+            >>> orders = client.get_orders()
+            >>> for order in orders:
+            ...     print(f"{order.get('order_id')}: {order.get('status')}")
+            
+        Reference:
+            docs/Upstox.md - GET /order/retrieve-all
+        """
+        logger.info("Fetching all orders")
+        response = self._make_request("GET", "/order/retrieve-all")
+        orders = safe_get(response, 'data', default=[])
+        logger.info(f"Fetched {len(orders)} orders")
+        return orders
+    
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """
+        Get details of a specific order.
+        
+        Args:
+            order_id: Order ID to fetch
+            
+        Returns:
+            Order details
+            
+        Example:
+            >>> order = client.get_order_details("240125000123456")
+            >>> print(f"Status: {order.get('status')}")
+            
+        Reference:
+            docs/Upstox.md - GET /order/details
+        """
+        logger.info(f"Fetching order details for {order_id}")
+        response = self._make_request(
+            "GET",
+            "/order/details",
+            params={"order_id": order_id}
+        )
+        order = safe_get(response, 'data', default={})
+        return order
+    
+    def get_order_history(self, order_id: str) -> List[Dict[str, Any]]:
+        """
+        Get history/trail of a specific order.
+        
+        Args:
+            order_id: Order ID to fetch history for
+            
+        Returns:
+            List of order history entries
+            
+        Reference:
+            docs/Upstox.md - GET /order/history
+        """
+        logger.info(f"Fetching order history for {order_id}")
+        response = self._make_request(
+            "GET",
+            "/order/history",
+            params={"order_id": order_id}
+        )
+        history = safe_get(response, 'data', default=[])
+        return history
+    
+    def get_trades(self) -> List[Dict[str, Any]]:
+        """
+        Get list of all trades for the day.
+        
+        Returns:
+            List of executed trades
+            
+        Example:
+            >>> trades = client.get_trades()
+            >>> for trade in trades:
+            ...     print(f"{trade.get('trade_id')}: {trade.get('quantity')} @ {trade.get('price')}")
+            
+        Reference:
+            docs/Upstox.md - GET /order/trades/get-trades-for-day
+        """
+        logger.info("Fetching all trades")
+        response = self._make_request("GET", "/order/trades/get-trades-for-day")
+        trades = safe_get(response, 'data', default=[])
+        logger.info(f"Fetched {len(trades)} trades")
+        return trades
+    
+    def get_trades_by_order(self, order_id: str) -> List[Dict[str, Any]]:
+        """
+        Get trades for a specific order.
+        
+        Args:
+            order_id: Order ID to fetch trades for
+            
+        Returns:
+            List of trades for the order
+            
+        Reference:
+            docs/Upstox.md - GET /order/trades/get-trades-by-order
+        """
+        logger.info(f"Fetching trades for order {order_id}")
+        response = self._make_request(
+            "GET",
+            "/order/trades/get-trades-by-order",
+            params={"order_id": order_id}
+        )
+        trades = safe_get(response, 'data', default=[])
+        return trades
+    
+    # ========================================================================
+    # Option Chain API
+    # ========================================================================
+    
+    def get_option_chain(
+        self,
+        instrument_key: str,
+        expiry_date: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get option chain data for an instrument.
+        
+        Args:
+            instrument_key: Underlying instrument key (format: NSE_INDEX|Nifty 50)
+            expiry_date: Optional expiry date filter (YYYY-MM-DD)
+            
+        Returns:
+            Option chain data with strike prices, premiums, etc.
+            
+        Example:
+            >>> chain = client.get_option_chain("NSE_INDEX|Nifty 50")
+            >>> expiry_dates = safe_get(chain, 'expiry', default=[])
+            
+        Reference:
+            docs/Upstox.md - GET /option/chain
+        """
+        logger.info(f"Fetching option chain for {instrument_key}")
+        
+        params = {"instrument_key": instrument_key}
+        if expiry_date:
+            params["expiry_date"] = expiry_date
+        
+        response = self._make_request("GET", "/option/chain", params=params)
+        option_data = safe_get(response, 'data', default={})
+        logger.info(f"Fetched option chain data")
+        
+        return option_data
+    
+    # ========================================================================
+    # Charges API
+    # ========================================================================
+    
+    def get_charges(
+        self,
+        instrument_key: str,
+        quantity: int,
+        product: str,
+        transaction_type: str,
+        price: float
+    ) -> Dict[str, Any]:
+        """
+        Get brokerage charges for a trade.
+        
+        Args:
+            instrument_key: Instrument to trade (format: NSE_EQ|INE...)
+            quantity: Number of shares/contracts
+            product: Product type (D=Delivery, I=Intraday, M=Margin)
+            transaction_type: BUY or SELL
+            price: Trade price
+            
+        Returns:
+            Dictionary with charge breakup
+            
+        Example:
+            >>> charges = client.get_charges(
+            ...     "NSE_EQ|INE669E01016",
+            ...     10,
+            ...     "D",
+            ...     "BUY",
+            ...     1500.0
+            ... )
+            
+        Reference:
+            docs/Upstox.md - GET /charges/brokerage
+        """
+        logger.info(f"Fetching charges for {instrument_key}")
+        
+        params = {
+            "instrument_token": instrument_key,
+            "quantity": quantity,
+            "product": product,
+            "transaction_type": transaction_type,
+            "price": price
+        }
+        
+        response = self._make_request("GET", "/charges/brokerage", params=params)
+        charges = safe_get(response, 'data', default={})
+        
+        return charges
 
 
 # ============================================================================
