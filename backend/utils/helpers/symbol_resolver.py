@@ -39,7 +39,7 @@ def resolve_symbols(
         instrument_type: List of instrument types (e.g., ['EQ', 'BE'])
         has_fno: 1 = only stocks with F&O, 0 = exclude F&O, None = any
         criteria: Dict of filters (segment, instrument_type, has_fno, etc.)
-        sql_filter: Raw SQL WHERE clause (advanced)
+        sql_filter: Raw SQL WHERE clause (advanced) - DEPRECATED for security
 
     Returns:
         List of trading_symbol strings
@@ -51,39 +51,51 @@ def resolve_symbols(
     if symbols:
         return symbols
 
-    # Build SQL filter
+    # Build SQL filter with parameterized queries
     where_parts = []
+    params = []
 
     if criteria:
         if "segment" in criteria:
-            where_parts.append(f"segment='{criteria['segment']}'")
+            where_parts.append("segment=?")
+            params.append(criteria['segment'])
         if "instrument_type" in criteria:
             itype = criteria["instrument_type"]
             if isinstance(itype, list):
-                types_str = "','".join(itype)
-                where_parts.append(f"instrument_type IN ('{types_str}')")
+                placeholders = ','.join('?' * len(itype))
+                where_parts.append(f"instrument_type IN ({placeholders})")
+                params.extend(itype)
             else:
-                where_parts.append(f"instrument_type='{itype}'")
+                where_parts.append("instrument_type=?")
+                params.append(itype)
         if "has_fno" in criteria:
-            where_parts.append(f"has_fno={criteria['has_fno']}")
+            where_parts.append("has_fno=?")
+            params.append(criteria['has_fno'])
     else:
         if segment:
-            where_parts.append(f"segment='{segment}'")
+            where_parts.append("segment=?")
+            params.append(segment)
         if instrument_type:
-            types_str = "','".join(instrument_type)
-            where_parts.append(f"instrument_type IN ('{types_str}')")
+            placeholders = ','.join('?' * len(instrument_type))
+            where_parts.append(f"instrument_type IN ({placeholders})")
+            params.extend(instrument_type)
         if has_fno is not None:
-            where_parts.append(f"has_fno={has_fno}")
+            where_parts.append("has_fno=?")
+            params.append(has_fno)
 
-    # Build query
+    # Build query - NOTE: sql_filter parameter deprecated for security
     if sql_filter:
-        query = f"SELECT DISTINCT trading_symbol FROM exchange_listings {sql_filter}"
+        print("⚠️  WARNING: sql_filter parameter is deprecated for security reasons")
+        print("    Please use segment, instrument_type, and has_fno parameters instead")
+        # Fallback to safer criteria-based approach
+        where_clause = " AND ".join(where_parts) if where_parts else "1=1"
+        query = f"SELECT DISTINCT trading_symbol FROM exchange_listings WHERE {where_clause}"
     else:
         where_clause = " AND ".join(where_parts) if where_parts else "1=1"
         query = f"SELECT DISTINCT trading_symbol FROM exchange_listings WHERE {where_clause}"
 
     try:
-        results = cur.execute(query).fetchall()
+        results = cur.execute(query, params).fetchall()
         symbols = [row[0] for row in results]
         print(f"✅ Resolved {len(symbols)} symbols")
         if len(symbols) <= 20:
@@ -112,7 +124,7 @@ def show_available_filters():
         "SELECT DISTINCT segment FROM exchange_listings ORDER BY segment"
     ):
         cnt = cur.execute(
-            f"SELECT COUNT(*) FROM exchange_listings WHERE segment='{seg}'"
+            "SELECT COUNT(*) FROM exchange_listings WHERE segment=?", (seg,)
         ).fetchone()[0]
         print(f"   {seg:20} ({cnt:7,} listings)")
 
@@ -121,7 +133,7 @@ def show_available_filters():
         "SELECT DISTINCT instrument_type FROM exchange_listings WHERE segment='NSE_EQ' ORDER BY instrument_type"
     ):
         cnt = cur.execute(
-            f"SELECT COUNT(*) FROM exchange_listings WHERE segment='NSE_EQ' AND instrument_type='{itype}'"
+            "SELECT COUNT(*) FROM exchange_listings WHERE segment='NSE_EQ' AND instrument_type=?", (itype,)
         ).fetchone()[0]
         print(f"   {itype:20} ({cnt:7,} listings)")
 

@@ -6,6 +6,7 @@ Provides REST endpoints for the React frontend
 
 from flask import Flask, jsonify, request, g, Response, stream_with_context, render_template
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 import sqlite3
 import sys
 import os
@@ -28,24 +29,27 @@ from backend.services.market_data.downloader import StockDownloader, OptionDownl
 from backend.services.market_data.options_chain import OptionsChainService
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend
 
-# Database path
-DB_PATH = 'market_data.db'
+# Security configuration
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24).hex())
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_TIME_LIMIT'] = None  # No time limit for dev/test
 
-# Upstox credentials (from oauth_server.py)
-CLIENT_ID = '33b9a757-1a99-47dc-b6fa-c3cf3dcaf6b4'
+# Enable CORS for frontend (CSRF will still be enforced)
+CORS(app, supports_credentials=True)
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/api_server.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+# Enable CSRF protection
+csrf = CSRFProtect(app)
+
+# Database path - load from environment
+DB_PATH = os.getenv('DATABASE_PATH', 'market_data.db')
+
+# Upstox credentials - load from environment
+CLIENT_ID = os.getenv('UPSTOX_CLIENT_ID', '')
+
+# Use centralized logging configuration
+from backend.utils.logging.config import get_logger
+logger = get_logger(__name__)
 
 # Create logs directory
 Path('logs').mkdir(exist_ok=True)

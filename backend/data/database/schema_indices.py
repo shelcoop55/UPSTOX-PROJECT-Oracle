@@ -280,10 +280,15 @@ def print_summary(conn: sqlite3.Connection):
     for col in index_columns:
         logger.info(f"  ✅ {col}")
     
-    # Check new tables
+    # Check new tables - using validated table names
     tables = ['nse_index_metadata', 'index_constituents_v2', 'nse_index_scrape_log']
+    valid_tables = {'nse_index_metadata', 'index_constituents_v2', 'nse_index_scrape_log'}
+    
     logger.info(f"\n📁 New tables created:")
     for table in tables:
+        if table not in valid_tables:
+            logger.warning(f"  ⚠️  Skipping invalid table: {table}")
+            continue
         cursor.execute(f"SELECT COUNT(*) FROM {table}")
         count = cursor.fetchone()[0]
         logger.info(f"  ✅ {table:30} | {count} rows")
