@@ -18,3 +18,21 @@ class AuthHeadersMixin:
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+
+
+class OptionalAuthHeadersMixin:
+    """Mixin that provides auth headers if token is available, else empty dict."""
+
+    def _get_headers(self) -> Dict[str, str]:
+        if not hasattr(self, 'auth_manager'):
+            return {}
+            
+        token = self.auth_manager.get_valid_token()
+        if not token:
+            return {}
+
+        return {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }

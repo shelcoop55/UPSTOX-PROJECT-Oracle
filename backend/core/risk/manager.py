@@ -257,7 +257,7 @@ class RiskManager:
                 continue
 
             # Check if stop-loss is hit
-            is_long = entry_price < sl_price  # False = long, True would be short
+            is_long = entry_price > sl_price  # True = long (SL below entry), False = short (SL above entry)
             stop_hit = False
 
             if is_long:

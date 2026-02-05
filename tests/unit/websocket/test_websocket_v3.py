@@ -52,7 +52,7 @@ class TestWebSocketConnection:
                 'authorized_redirect_uri': 'wss://feed.upstox.com/v3/market-data-feed'
             }
         }
-        mock_session.post.return_value = mock_response
+        mock_session.get.return_value = mock_response
         
         # Mock auth manager
         mock_auth_instance = MagicMock()
@@ -75,7 +75,7 @@ class TestWebSocketConnection:
         mock_response = Mock()
         mock_response.status_code = 401
         mock_response.raise_for_status.side_effect = Exception("Unauthorized")
-        mock_session.post.return_value = mock_response
+        mock_session.get.return_value = mock_response
         
         # Mock auth manager
         mock_auth_instance = MagicMock()

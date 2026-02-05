@@ -44,12 +44,12 @@ def resolve_symbols(
     Returns:
         List of trading_symbol strings
     """
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-
     # Direct symbol list
     if symbols:
         return symbols
+
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
 
     # Build SQL filter with parameterized queries
     where_parts = []

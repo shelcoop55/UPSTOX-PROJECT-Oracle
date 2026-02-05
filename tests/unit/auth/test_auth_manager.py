@@ -5,6 +5,7 @@ Tests for auth manager and token refresh scheduler
 """
 
 import pytest
+import os
 from unittest.mock import Mock, patch, MagicMock
 import time
 from datetime import datetime, timedelta
@@ -21,12 +22,20 @@ from backend.utils.auth.token_refresh_scheduler import TokenRefreshScheduler
 # Generate valid Fernet key for testing
 TEST_ENCRYPTION_KEY = Fernet.generate_key().decode()
 
+@pytest.fixture
+def auth_manager_db():
+    db_file = "test_auth_manager.db"
+    if os.path.exists(db_file):
+        os.remove(db_file)
+    yield db_file
+    if os.path.exists(db_file):
+        os.remove(db_file)
 
 class TestAuthManager:
     """Test AuthManager functionality"""
     
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_initialization(self, mock_getenv):
+    def test_initialization(self, mock_getenv, auth_manager_db):
         """Test AuthManager initializes with env variables"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client_id',
@@ -35,23 +44,23 @@ class TestAuthManager:
             'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         
         assert auth.client_id == 'test_client_id'
         assert auth.client_secret == 'test_secret'
         assert auth.redirect_uri == 'http://localhost:5050/callback'
     
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_get_authorization_url(self, mock_getenv):
+    def test_get_authorization_url(self, mock_getenv, auth_manager_db):
         """Test authorization URL generation"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
             'UPSTOX_REDIRECT_URI': 'http://localhost:5050/callback',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         url = auth.get_authorization_url()
         
         assert 'https://api.upstox.com/v2/login/authorization/dialog' in url
@@ -60,12 +69,12 @@ class TestAuthManager:
     
     @patch('backend.utils.auth.manager.requests.post')
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_exchange_code_for_token_success(self, mock_getenv, mock_post):
+    def test_exchange_code_for_token_success(self, mock_getenv, mock_post, auth_manager_db):
         """Test successful token exchange"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
         mock_response = Mock()
@@ -77,7 +86,7 @@ class TestAuthManager:
         }
         mock_post.return_value = mock_response
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         token_data = auth.exchange_code_for_token('test_code')
         
         assert token_data['access_token'] == 'test_access_token'
@@ -85,12 +94,12 @@ class TestAuthManager:
     
     @patch('backend.utils.auth.manager.requests.post')
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_exchange_code_failure(self, mock_getenv, mock_post):
+    def test_exchange_code_failure(self, mock_getenv, mock_post, auth_manager_db):
         """Test token exchange handles failure"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
         mock_response = Mock()
@@ -98,21 +107,21 @@ class TestAuthManager:
         mock_response.raise_for_status.side_effect = Exception("Unauthorized")
         mock_post.return_value = mock_response
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         
         with pytest.raises(Exception):
             auth.exchange_code_for_token('invalid_code')
     
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_save_and_retrieve_token(self, mock_getenv):
+    def test_save_and_retrieve_token(self, mock_getenv, auth_manager_db):
         """Test saving and retrieving tokens"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         
         token_data = {
             'access_token': 'test_access_token',
@@ -127,15 +136,15 @@ class TestAuthManager:
         assert retrieved_token == 'test_access_token'
     
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_revoke_token(self, mock_getenv):
+    def test_revoke_token(self, mock_getenv, auth_manager_db):
         """Test token revocation"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         
         token_data = {
             'access_token': 'test_token',
@@ -217,7 +226,8 @@ class TestTokenRefreshScheduler:
         assert len(jobs) > 0
         
         # Clean up
-        scheduler.stop()
+        if hasattr(scheduler, 'scheduler') and scheduler.scheduler.running:
+            scheduler.stop()
     
     @patch('backend.utils.auth.token_refresh_scheduler.AuthManager')
     def test_get_status(self, mock_auth):
@@ -236,7 +246,8 @@ class TestTokenRefreshScheduler:
         assert 'timezone' in status
         
         # Clean up
-        scheduler.stop()
+        if hasattr(scheduler, 'scheduler') and scheduler.scheduler.running:
+            scheduler.stop()
 
 
 class TestTokenAutoRefreshIntegration:
@@ -244,12 +255,12 @@ class TestTokenAutoRefreshIntegration:
     
     @patch('backend.utils.auth.manager.requests.post')
     @patch('backend.utils.auth.manager.os.getenv')
-    def test_expired_token_auto_refresh(self, mock_getenv, mock_post):
+    def test_expired_token_auto_refresh(self, mock_getenv, mock_post, auth_manager_db):
         """Test auto-refresh of expired token"""
         mock_getenv.side_effect = lambda key, default=None: {
             'UPSTOX_CLIENT_ID': 'test_client',
             'UPSTOX_CLIENT_SECRET': 'test_secret',
-            'ENCRYPTION_KEY': 'test_key_32_bytes_long_exactly!!'
+            'ENCRYPTION_KEY': TEST_ENCRYPTION_KEY
         }.get(key, default)
         
         # Mock successful refresh
@@ -262,7 +273,7 @@ class TestTokenAutoRefreshIntegration:
         }
         mock_post.return_value = mock_response
         
-        auth = AuthManager(db_path=':memory:')
+        auth = AuthManager(db_path=auth_manager_db)
         
         # Save token that expires in 1 second
         token_data = {

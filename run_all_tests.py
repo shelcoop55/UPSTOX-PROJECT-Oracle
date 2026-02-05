@@ -34,7 +34,7 @@ def run_test_category(category_path, category_name):
     
     try:
         result = subprocess.run(
-            ['python3', '-m', 'pytest', category_path, '-v', '--tb=short'],
+            [sys.executable, '-m', 'pytest', category_path, '-v', '--tb=short'],
             capture_output=True,
             text=True,
             timeout=300
@@ -46,25 +46,31 @@ def run_test_category(category_path, category_name):
             print(result.stderr)
         
         # Parse results
-        if 'passed' in result.stdout:
-            # Extract test counts
-            import re
-            match = re.search(r'(\d+) passed', result.stdout)
-            if match:
-                passed = int(match.group(1))
-                print(f"{Colors.GREEN}✅ {category_name}: {passed} tests PASSED{Colors.END}")
-                return {'passed': passed, 'failed': 0, 'category': category_name}
+        passed = 0
+        failed = 0
         
-        if 'failed' in result.stdout:
-            match = re.search(r'(\d+) failed', result.stdout)
-            if match:
-                failed = int(match.group(1))
-                print(f"{Colors.RED}❌ {category_name}: {failed} tests FAILED{Colors.END}")
-                return {'passed': 0, 'failed': failed, 'category': category_name}
-        
-        # No tests found
-        print(f"{Colors.YELLOW}⚠️  {category_name}: No tests found or collection error{Colors.END}")
-        return {'passed': 0, 'failed': 0, 'category': category_name, 'error': True}
+        # Look for passed count
+        import re
+        passed_match = re.search(r'(\d+) passed', result.stdout)
+        if passed_match:
+            passed = int(passed_match.group(1))
+            
+        # Look for failed count
+        failed_match = re.search(r'(\d+) failed', result.stdout)
+        if failed_match:
+            failed = int(failed_match.group(1))
+            
+        if failed > 0:
+            print(f"{Colors.RED}❌ {category_name}: {failed} tests FAILED{Colors.END}")
+        elif passed > 0:
+            print(f"{Colors.GREEN}✅ {category_name}: {passed} tests PASSED{Colors.END}")
+            
+        if passed == 0 and failed == 0 and not result.stdout:
+            # No tests found
+            print(f"{Colors.YELLOW}⚠️  {category_name}: No tests found or collection error{Colors.END}")
+            return {'passed': 0, 'failed': 0, 'category': category_name, 'error': True}
+            
+        return {'passed': passed, 'failed': failed, 'category': category_name}
         
     except subprocess.TimeoutExpired:
         print(f"{Colors.RED}❌ {category_name}: Tests timed out{Colors.END}")

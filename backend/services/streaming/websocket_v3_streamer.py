@@ -39,7 +39,7 @@ _project_root = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_project_root))
 
 from backend.utils.auth.manager import AuthManager
-from backend.utils.errors import with_retry, UpstoxAPIError
+from backend.utils.logging.error_handler import with_retry, UpstoxAPIError
 from backend.data.database.database_pool import get_db_pool
 from backend.utils.auth.mixins import AuthHeadersMixin
 import requests
@@ -52,8 +52,8 @@ class WebSocketV3Streamer(AuthHeadersMixin):
     WebSocket v3 streamer with enhanced monitoring and portfolio feed.
     """
 
-    BASE_URL = "https://api.upstox.com/v2"
-    AUTHORIZE_V3 = "/feed/market-data-feed/authorize/v3"
+    BASE_URL = "https://api.upstox.com"
+    AUTHORIZE_V3 = "/v3/feed/market-data-feed/authorize"
 
     def __init__(self, db_path: str = "market_data.db"):
         """
@@ -152,7 +152,7 @@ class WebSocketV3Streamer(AuthHeadersMixin):
             headers = self._get_headers()
             url = f"{self.BASE_URL}{self.AUTHORIZE_V3}"
 
-            response = self.session.post(url, headers=headers, timeout=15)
+            response = self.session.get(url, headers=headers, timeout=15)
             response.raise_for_status()
 
             result = response.json()
@@ -220,6 +220,13 @@ class WebSocketV3Streamer(AuthHeadersMixin):
     def _on_message(self, ws, message):
         """Handle incoming websocket message"""
         try:
+            if isinstance(message, bytes):
+                # logger.debug(f"Received binary message: {len(message)} bytes")
+                self.total_messages_received += 1
+                self.last_message_time = datetime.now()
+                self._update_health_status()
+                return
+
             data = json.loads(message)
 
             self.total_messages_received += 1
