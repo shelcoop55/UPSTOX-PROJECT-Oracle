@@ -323,6 +323,21 @@ class DatabaseValidator:
         Returns:
             Dict with quality metrics and issues
         """
+        # Whitelist valid table names to prevent SQL injection
+        valid_tables = {
+            'market_data', 'ohlc_data', 'option_chain', 'market_quotes',
+            'trading_signals', 'paper_orders', 'backtest_results',
+            'risk_metrics', 'position_limits', 'circuit_breaker_state',
+            'alert_rules', 'alert_history', 'price_alerts',
+            'performance_metrics', 'strategy_results',
+            'oauth_tokens', 'user_settings', 'instruments',
+            'tiered_instruments', 'nse_indices', 'nse_index_constituents',
+            'portfolio_holdings', 'brokerage_fees', 'exchange_listings'
+        }
+        
+        if table_name not in valid_tables:
+            raise ValueError(f"Invalid table name: {table_name}. Must be one of: {', '.join(sorted(valid_tables))}")
+        
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -336,7 +351,7 @@ class DatabaseValidator:
         }
 
         try:
-            # Get total records
+            # Get total records - table_name is now validated from whitelist
             cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
             quality_report["total_records"] = cursor.fetchone()[0]
 
