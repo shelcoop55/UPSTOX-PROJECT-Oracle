@@ -71,7 +71,7 @@ class OptionsChainService:
         This ensures we only return instruments that actually have 
         active options, not just instruments in the FnO segment.
         
-        Returns: {'indices': [...], 'equities': [...]}
+        Returns: {'indices': [...], 'equities': [...], 'commodities': [...], 'currencies': [...], 'ird': [...]}
         """
         try:
             import sqlite3
@@ -93,10 +93,19 @@ class OptionsChainService:
             
             indices = []
             equities = []
+            commodities = []
+            currencies = []
+            ird = []
             
             for symbol, type_ in rows:
                 if type_ == 'INDEX':
                     indices.append(symbol)
+                elif type_ == 'COM':
+                    commodities.append(symbol)
+                elif type_ == 'CUR':
+                    currencies.append(symbol)
+                elif type_ == 'IRD':
+                    ird.append(symbol)
                 else:
                     equities.append(symbol)
             
@@ -109,7 +118,10 @@ class OptionsChainService:
                     
             return {
                 "indices": indices,
-                "equities": equities
+                "equities": equities,
+                "commodities": commodities,
+                "currencies": currencies,
+                "ird": ird
             }
             
         except Exception as e:
@@ -117,8 +129,74 @@ class OptionsChainService:
             # Fallback
             return {
                 "indices": ["NIFTY", "BANKNIFTY", "FINNIFTY"],
-                "equities": ["RELIANCE", "TCS", "INFY", "HDFCBANK"]
+                "equities": ["RELIANCE", "TCS", "INFY", "HDFCBANK"],
+                "commodities": [],
+                "currencies": [],
+                "ird": []
             }
+
+    def get_expiry_dates_from_db(self, underlying_symbol: str) -> List[str]:
+        """
+        Extract expiry dates directly from database by parsing trading_symbol
+        of CE/PE contracts. This eliminates the need for API calls.
+        
+        Trading symbol format: "NIFTY 18000 CE 30 JUN 26"
+        Expiry is in the last 3 tokens: "30 JUN 26"
+        
+        Args:
+            underlying_symbol: The underlying instrument symbol (e.g., "NIFTY")
+            
+        Returns:
+            Sorted list of expiry date strings (e.g., ["2026-02-06", "2026-02-13", ...])
+        """
+        try:
+            import sqlite3
+            from datetime import datetime
+            
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Query all option contracts for this underlying
+            cursor.execute("""
+                SELECT DISTINCT trading_symbol 
+                FROM exchange_listings 
+                WHERE underlying_symbol = ? 
+                  AND instrument_type IN ('CE', 'PE')
+                ORDER BY trading_symbol
+            """, (underlying_symbol,))
+            
+            rows = cursor.fetchall()
+            conn.close()
+            
+            # Extract and parse expiry dates
+            expiry_dates = set()
+            for (trading_symbol,) in rows:
+                # Format: "NIFTY 18000 CE 30 JUN 26"
+                # Split and get last 3 tokens
+                parts = trading_symbol.split()
+                if len(parts) >= 3:
+                    # Last 3 parts: day, month, year
+                    day = parts[-3]
+                    month = parts[-2]
+                    year = parts[-1]
+                    
+                    try:
+                        # Parse to datetime for proper sorting
+                        date_str = f"{day} {month} {year}"
+                        dt = datetime.strptime(date_str, "%d %b %y")
+                        # Format as YYYY-MM-DD for consistency
+                        expiry_dates.add(dt.strftime("%Y-%m-%d"))
+                    except ValueError:
+                        # Skip invalid dates
+                        continue
+            
+            # Return sorted list (nearest expiry first)
+            return sorted(list(expiry_dates))
+            
+        except Exception as e:
+            logger.error(f"Error extracting expiry dates from DB: {e}")
+            return []
+
 
     def get_option_greeks(self, instrument_keys: List[str]) -> Dict:
         """

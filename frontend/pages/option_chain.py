@@ -40,8 +40,14 @@ class OptionChainPage:
             # but to be safe and consistent with architecture, let's use the service instance we already have:
             fno_data = await asyncio.to_thread(service.get_fno_symbols)
             if fno_data:
-                # Combine Indices + Equities, Indices first
-                self.available_symbols = fno_data.get("indices", []) + sorted(fno_data.get("equities", []))
+                # Combine all categories: Indices first, then Equities, Commodities, Currencies, IRD
+                self.available_symbols = (
+                    fno_data.get("indices", []) + 
+                    sorted(fno_data.get("equities", [])) +
+                    sorted(fno_data.get("commodities", [])) +
+                    sorted(fno_data.get("currencies", [])) +
+                    sorted(fno_data.get("ird", []))
+                )
                 
                 # Update dropdown if it exists (it's created before initialize is called)
                 if hasattr(self, 'symbol_select') and self.symbol_select:
@@ -57,9 +63,9 @@ class OptionChainPage:
         except Exception as e:
             print(f"Error fetching symbols: {e}")
 
-        # Get initial expiries
+        # Get initial expiries from database (no API call needed)
         self.expiry_dates = await asyncio.to_thread(
-            service.get_expiry_dates, service._get_instrument_key(self.selected_symbol)
+            service.get_expiry_dates_from_db, self.selected_symbol
         )
         if self.expiry_dates:
             self.selected_expiry = self.expiry_dates[0]
@@ -86,9 +92,9 @@ class OptionChainPage:
         self.selected_symbol = new_symbol
         ui.notify(f"Switching to {new_symbol}...", type="info")
         
-        # Fetch new expiries
+        # Fetch new expiries from database (no API call needed)
         self.expiry_dates = await asyncio.to_thread(
-            service.get_expiry_dates, service._get_instrument_key(new_symbol)
+            service.get_expiry_dates_from_db, new_symbol
         )
         
         select_widget = e.sender
