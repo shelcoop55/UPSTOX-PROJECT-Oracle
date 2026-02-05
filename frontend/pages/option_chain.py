@@ -113,31 +113,39 @@ class OptionChainPage:
             
         self.chain_container.clear()
         
-        if not data or not data.get("strikes"):
+        # Check for empty data
+        is_empty = not data or not data.get("strikes")
+        
+        # Update Header Status
+        if self.status_badge:
+            if is_empty:
+                self.status_badge.text = "NO DATA"
+                self.status_badge.props("color=red text-color=white")
+                
+                if self.spot_label:
+                    self.spot_label.text = "---"
+                    self.timestamp_label.text = "Last Upd: --:--"
+            else:
+                self.status_badge.text = "LIVE"
+                self.status_badge.props("color=green text-color=white")
+                
+                # Update Spot Price
+                spot = data.get("underlying_price", 0)
+                timestamp = data.get("timestamp_str") or datetime.now().strftime("%H:%M:%S")
+                if self.spot_label:
+                    self.spot_label.text = f"{spot:,.2f}"
+                    self.timestamp_label.text = f"Last Upd: {timestamp}"
+
+        if is_empty:
             with self.chain_container:
                 with ui.column().classes("w-full items-center justify-center py-12"):
                     ui.icon("sentiment_dissatisfied", size="xl").classes("text-slate-600 mb-4")
                     ui.label("No Options Data Available").classes("text-slate-500 font-medium")
-                    ui.label("Try selecting a different expiry").classes("text-slate-600 text-sm")
+                    ui.label("Please check your API Token or Market Hours").classes("text-slate-600 text-sm")
             return
 
         strikes = data["strikes"]
         spot = data.get("underlying_price", 0)
-        timestamp = data.get("timestamp_str") or datetime.now().strftime("%H:%M:%S")
-
-        # Update Header Stats
-        if self.spot_label:
-            self.spot_label.text = f"{spot:,.2f}"
-            self.timestamp_label.text = f"Last Upd: {timestamp}"
-            
-            # Status Badge Logic
-            is_mock = data.get("is_mock", False)
-            if is_mock:
-                self.status_badge.text = "SIMULATION"
-                self.status_badge.props("color=amber text-color=black")
-            else:
-                self.status_badge.text = "LIVE"
-                self.status_badge.props("color=green text-color=white")
 
         # --- THE GRID ---
         # Columns: 

@@ -12,7 +12,7 @@ import requests
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from backend.utils.auth.manager import AuthManager
 from backend.utils.logging.error_handler import with_retry

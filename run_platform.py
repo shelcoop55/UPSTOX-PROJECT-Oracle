@@ -384,14 +384,24 @@ class PlatformLauncher:
                         if process.poll() is not None:
                             # Process died
                             self.service_stats[service_key]["status"] = "crashed"
-                            self.print_step(
-                                self.services[service_key]["name"],
-                                "Process crashed - attempting restart...",
-                                "error"
-                            )
-                            # Auto-restart
-                            self.start_service(service_key)
-                            self.service_stats[service_key]["restarts"] += 1
+                            restarts = self.service_stats[service_key]["restarts"]
+                            
+                            if restarts >= 2:
+                                self.print_step(
+                                    self.services[service_key]["name"],
+                                    f"Process crashed too many times ({restarts}). Giving up.",
+                                    "error"
+                                )
+                                self.service_stats[service_key]["status"] = "failed"
+                            else:
+                                self.print_step(
+                                    self.services[service_key]["name"],
+                                    "Process crashed - attempting restart...",
+                                    "error"
+                                )
+                                # Auto-restart
+                                self.start_service(service_key)
+                                self.service_stats[service_key]["restarts"] += 1
                         else:
                             # Process is running
                             self.service_stats[service_key]["status"] = "running"

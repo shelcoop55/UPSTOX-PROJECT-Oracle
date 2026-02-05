@@ -12,6 +12,13 @@ import sqlite3
 import os
 from collections import deque
 from datetime import datetime
+import sys
+from pathlib import Path
+
+# Ensure project root is in path
+project_root = str(Path(__file__).parent.absolute())
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
 
 # --- Debug Logging System ---
@@ -180,16 +187,33 @@ def main_dashboard(page: str = None):
                     "REFRESH", icon="refresh", on_click=lambda: refresh_all_data()
                 ).props("flat dense").classes("text-slate-400 hover:text-white")
 
-                # Auth Controls (Refreshable)
                 @ui.refreshable
                 def auth_controls():
                     is_auth = state.portfolio.get("authenticated", False)
                     mode = state.portfolio.get("mode", "unknown")
 
                     if is_auth:
-                        ui.chip("LIVE", icon="check_circle", color="green").props(
-                            "dense square outline"
-                        )
+                        with ui.row().classes("items-center gap-1"):
+                            ui.chip("LIVE", icon="check_circle", color="green").props(
+                                "dense square outline"
+                            )
+                            
+                            def handle_logout():
+                                try:
+                                    from backend.utils.auth.manager import AuthManager
+                                    auth = AuthManager()
+                                    auth.revoke_token("default")
+                                    state.portfolio["authenticated"] = False
+                                    state.portfolio["mode"] = "paper"
+                                    auth_controls.refresh()
+                                    ui.notify("Logged out successfully", type="positive")
+                                except Exception as e:
+                                    ui.notify(f"Logout failed: {e}", type="negative")
+
+                            ui.button(icon="logout", on_click=handle_logout).props(
+                                "flat dense round color=red"
+                            ).tooltip("Logout")
+
                     elif mode == "paper":
                         ui.chip("PAPER TRADING", icon="science", color="orange").props(
                             "dense square outline"

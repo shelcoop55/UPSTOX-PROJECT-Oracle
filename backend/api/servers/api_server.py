@@ -126,7 +126,7 @@ def get_portfolio():
     """Get portfolio summary - fetches real data from Upstox if authenticated"""
     try:
         # Check if authenticated using AuthManager
-        from auth_manager import AuthManager
+        from backend.utils.auth.manager import AuthManager
         auth = AuthManager()
         access_token = auth.get_valid_token()
         

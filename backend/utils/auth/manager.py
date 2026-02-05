@@ -45,8 +45,11 @@ class AuthManager:
         # FIX START: Force Absolute Path for Database
         # ------------------------------------------------------------------
         # This ensures Port 5050 (Scripts) and Port 8000 (Root) use the SAME file.
+        # This ensures Port 5050 (Scripts) and Port 8000 (Root) use the SAME file.
+        # file is in backend/utils/auth/manager.py
+        # root is 3 levels up
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(current_script_dir)
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_script_dir)))
 
         if db_path is None:
             # If no path given, force it to be in the project root

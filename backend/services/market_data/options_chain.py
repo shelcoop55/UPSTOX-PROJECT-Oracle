@@ -168,7 +168,7 @@ class OptionsChainService:
             token = self.auth_manager.get_valid_token()
             if not token:
                 logger.error("[OPTIONS] No valid Upstox token available")
-                return self._mock_option_chain(symbol, expiry_date, market_open)
+                return {}
 
             # Construct API request
             headers = build_bearer_headers(token, include_json=True)
@@ -190,8 +190,8 @@ class OptionsChainService:
                     # Also update result to show we picked this date
                     expiry_date = dates[0]
                 else:
-                    logger.warning("Could not find expiry dates, defaulting to mock")
-                    return self._mock_option_chain(symbol, expiry_date, market_open)
+                    logger.warning("Could not find expiry dates")
+                    return {}
 
             logger.debug(
                 f"[OPTIONS] API request: {self.base_url}/option/chain, params={params}"
@@ -210,11 +210,11 @@ class OptionsChainService:
                 return self._process_upstox_response(data, symbol, market_open)
 
             logger.warning(f"API Failed {response.status_code}: {response.text}")
-            return self._mock_option_chain(symbol, expiry_date, market_open)
+            return {}
 
         except Exception as e:
             logger.error(f"[OPTIONS] Error fetching chain: {e}", exc_info=True)
-            return self._mock_option_chain(symbol, expiry_date, market_open)
+            return {}
 
         # TODO: Uncomment below when Upstox option chain API is properly configured
         """
@@ -301,9 +301,8 @@ class OptionsChainService:
     ) -> Dict:
         """Process Upstox API response into standardized format"""
         # data structure based on v2 API documentation
-        resp_data = data.get("data", [])
         if not resp_data:
-            return self._mock_option_chain(symbol, None, market_open)
+            return {}
 
         # The v2 API returns a LIST of objects (one per strike/expiry combo? or one object with strikes?)
         # Doc says Response Body: { status: success, data: [ { expiry, strike_price, call_options, put_options ... } ] }
@@ -381,137 +380,9 @@ class OptionsChainService:
         logger.info(f"[OPTIONS] Processed {len(strikes_data)} strikes")
         return result
 
-    def _mock_option_chain(
-        self, symbol: str, expiry_date: Optional[str], market_open: bool
-    ) -> Dict:
-        """
-        Generate realistic mock option chain data
-        Used when market is closed or API is unavailable
-        """
-        logger.warning("[OPTIONS] Generating mock option chain data")
-
-        # Mock underlying price based on symbol
-        underlying_prices = {
-            "NIFTY": 21800.00,
-            "BANKNIFTY": 46500.00,
-            "FINNIFTY": 19800.00,
-            "RELIANCE": 2850.00,
-            "INFY": 1450.00,
-            "TCS": 3650.00,
-        }
-
-        underlying_price = underlying_prices.get(symbol.upper(), 1000.00)
-
-        # Generate strikes around current price
-        if symbol.upper() in ["NIFTY", "BANKNIFTY", "FINNIFTY"]:
-            strike_interval = 100 if symbol.upper() == "NIFTY" else 100
-            num_strikes = 15
-        else:
-            strike_interval = 50
-            num_strikes = 11
-
-        atm_strike = round(underlying_price / strike_interval) * strike_interval
-        strikes = [
-            atm_strike + (i - num_strikes // 2) * strike_interval
-            for i in range(num_strikes)
-        ]
-
-        strikes_data = []
-        for strike in strikes:
-            # Calculate moneyness
-            moneyness = (underlying_price - strike) / strike
-
-            # Mock option prices based on moneyness
-            call_ltp = (
-                max(0, (underlying_price - strike) + abs(moneyness) * 50)
-                if strike < underlying_price
-                else abs(moneyness) * 30
-            )
-            put_ltp = (
-                max(0, (strike - underlying_price) + abs(moneyness) * 50)
-                if strike > underlying_price
-                else abs(moneyness) * 30
-            )
-
-            # Mock Greeks (simplified Black-Scholes approximation)
-            call_delta = 0.5 + moneyness if moneyness > 0 else 0.5 * (1 + moneyness)
-            put_delta = call_delta - 1
-
-            gamma = 0.05 if abs(moneyness) < 0.02 else 0.02  # High gamma near ATM
-            theta = -20 if abs(moneyness) < 0.02 else -10  # High theta near ATM
-            vega = 15 if abs(moneyness) < 0.02 else 8
-            iv = 18 + abs(moneyness) * 10  # IV smile
-
-            strikes_data.append(
-                {
-                    "strike": strike,
-                    "call": {
-                        "ltp": round(call_ltp, 2),
-                        "volume": (
-                            int(10000 * (1 - abs(moneyness)))
-                            if abs(moneyness) < 0.1
-                            else 1000
-                        ),
-                        "oi": (
-                            int(50000 * (1 - abs(moneyness)))
-                            if abs(moneyness) < 0.1
-                            else 5000
-                        ),
-                        "iv": round(iv, 2),
-                        "delta": round(call_delta, 3),
-                        "gamma": round(gamma, 3),
-                        "theta": round(theta, 2),
-                        "vega": round(vega, 2),
-                        "bid": round(call_ltp * 0.98, 2),
-                        "ask": round(call_ltp * 1.02, 2),
-                    },
-                    "put": {
-                        "ltp": round(put_ltp, 2),
-                        "volume": (
-                            int(10000 * (1 - abs(moneyness)))
-                            if abs(moneyness) < 0.1
-                            else 1000
-                        ),
-                        "oi": (
-                            int(50000 * (1 - abs(moneyness)))
-                            if abs(moneyness) < 0.1
-                            else 5000
-                        ),
-                        "iv": round(iv, 2),
-                        "delta": round(put_delta, 3),
-                        "gamma": round(gamma, 3),
-                        "theta": round(theta, 2),
-                        "vega": round(vega, 2),
-                        "bid": round(put_ltp * 0.98, 2),
-                        "ask": round(put_ltp * 1.02, 2),
-                    },
-                }
-            )
-
-        # Use next weekly expiry if not provided
-        if not expiry_date:
-            # Find next Friday
-            today = datetime.now()
-            days_ahead = 4 - today.weekday()  # 4 = Friday
-            if days_ahead <= 0:
-                days_ahead += 7
-            next_friday = today + timedelta(days=days_ahead)
-            expiry_date = next_friday.strftime("%Y-%m-%d")
-
-        result = {
-            "symbol": symbol,
-            "expiry_date": expiry_date,
-            "underlying_price": underlying_price,
-            "timestamp": datetime.now().isoformat(),
-            "market_open": market_open,
-            "data_source": "mock",
-            "strikes": strikes_data,
-        }
-
-        logger.info(
-            f"[OPTIONS] Generated mock chain: {len(strikes_data)} strikes, underlying={underlying_price}"
-        )
-        return result
+    def _validate_mock_option_chain_removed(self):
+        """Mock data removed as per user request"""
+        pass
 
 
 # Testing
@@ -524,8 +395,12 @@ if __name__ == "__main__":
 
     # Test option chain fetch
     chain = service.get_option_chain("NIFTY")
-    print(f"\nOption Chain for {chain['symbol']}:")
-    print(f"Underlying: ₹{chain['underlying_price']}")
-    print(f"Expiry: {chain['expiry_date']}")
-    print(f"Strikes: {len(chain['strikes'])}")
-    print(f"Data source: {chain.get('data_source', 'live')}")
+    
+    if chain:
+        print(f"\nOption Chain for {chain.get('symbol', 'Unknown')}:")
+        print(f"Underlying: ₹{chain.get('underlying_price', 0)}")
+        print(f"Expiry: {chain.get('expiry_date', 'N/A')}")
+        print(f"Strikes: {len(chain.get('strikes', []))}")
+        print(f"Data source: {chain.get('data_source', 'live')}")
+    else:
+        print("\n❌ No option chain data available (Token expired or Market closed)")

@@ -131,16 +131,8 @@ def handle_subscribe_options(data):
             },
         )
     else:
-        # Send mock data if API fails
-        emit(
-            "options_update",
-            {
-                "symbol": symbol,
-                "data": _get_mock_option_chain(symbol),
-                "timestamp": datetime.now().isoformat(),
-                "is_mock": True,
-            },
-        )
+        # No data available
+        emit("error", {"message": f"No data available for {symbol}"})
 
 
 @socketio.on("unsubscribe_options")
@@ -207,37 +199,8 @@ def handle_subscribe_positions():
     )
 
 
-def _get_mock_option_chain(symbol: str):
-    """Generate mock option chain for testing"""
-    base_price = (
-        21800 if symbol == "NIFTY" else 46500 if symbol == "BANKNIFTY" else 19500
-    )
-
-    strikes = []
-    for i in range(-7, 8):
-        strike = base_price + (i * 100)
-        strikes.append(
-            {
-                "strike": strike,
-                "call_ltp": max(0, (base_price - strike) + 50),
-                "put_ltp": max(0, (strike - base_price) + 50),
-                "call_oi": 1000000 + (i * 50000),
-                "put_oi": 1000000 - (i * 50000),
-                "call_volume": 50000 + abs(i) * 10000,
-                "put_volume": 50000 + abs(i) * 10000,
-                "call_iv": 15 + abs(i),
-                "put_iv": 15 + abs(i),
-                "call_delta": 0.50 + (i * 0.05),
-                "put_delta": -0.50 - (i * 0.05),
-            }
-        )
-
-    return {
-        "symbol": symbol,
-        "underlying_price": base_price,
-        "strikes": strikes,
-        "expiry": "2026-02-27",
-    }
+    def _validate_mock_removed(self):
+        pass
 
 
 def start_background_updates():
