@@ -30,11 +30,11 @@ from backend.services.market_data.options_chain import OptionsChainService
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
-# Database path
-DB_PATH = 'market_data.db'
+# Database path - load from environment
+DB_PATH = os.getenv('DATABASE_PATH', 'market_data.db')
 
-# Upstox credentials (from oauth_server.py)
-CLIENT_ID = '33b9a757-1a99-47dc-b6fa-c3cf3dcaf6b4'
+# Upstox credentials - load from environment
+CLIENT_ID = os.getenv('UPSTOX_CLIENT_ID', '')
 
 # Configure logging
 logging.basicConfig(
