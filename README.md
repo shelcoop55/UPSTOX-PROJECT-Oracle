@@ -115,7 +115,13 @@ python run_platform.py --stop
 - 🚀 **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Production deployment
 - 🛠️ **[docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md)** - Development setup
 - 📊 **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status
-- 🛡️ **[docs/ZERO_ERROR_ARCHITECT.md](docs/ZERO_ERROR_ARCHITECT.md)** - Zero-Error Architect Guide ⭐ NEW
+- 🛡️ **[docs/ZERO_ERROR_ARCHITECT.md](docs/ZERO_ERROR_ARCHITECT.md)** - Zero-Error Architect Guide
+
+**Code Review & Architecture Audit:** ⭐ **NEW** (February 2026)
+- 📋 **[docs/EXECUTIVE_SUMMARY.md](docs/EXECUTIVE_SUMMARY.md)** - Executive summary (start here!)
+- 🏛️ **[docs/CODE_REVIEW_ARCHITECTURE_AUDIT.md](docs/CODE_REVIEW_ARCHITECTURE_AUDIT.md)** - Complete review (50KB)
+- 🗺️ **[docs/PROPOSED_ARCHITECTURE.md](docs/PROPOSED_ARCHITECTURE.md)** - Improved architecture (31KB)
+- 📅 **[docs/REFACTORING_ROADMAP.md](docs/REFACTORING_ROADMAP.md)** - Step-by-step plan (41KB)
 
 **Reference:**
 - 🧪 **[docs/TESTING.md](docs/TESTING.md)** - Testing guide
