@@ -1,8 +1,10 @@
 """
-Deep Web Enrichment using YFinance
-----------------------------------
-Fetches Sector/Industry data for stocks missing this info in instrument_master.
-Uses Yahoo Finance as the data source.
+Deep Web Enrichment using YFinance (Sector + Industry)
+------------------------------------------------------
+Fetches granular Sector vs Industry data.
+Examples:
+    Sector: Energy  -> Industry: Oil & Gas Refining
+    Sector: Tech    -> Industry: Software Infrastructure
 
 Usage:
     python backend/data/etl/enrich_industry_yfinance.py [--limit 100]
@@ -37,41 +39,43 @@ logger = logging.getLogger("YFEnricher")
 def get_db_connection():
     return sqlite3.connect(DB_PATH)
 
-def fetch_missing_industry_symbols(limit=100):
+def fetch_missing_data_symbols(limit=100):
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Prioritize missing SECTOR first (new column)
     cursor.execute("""
         SELECT trading_symbol 
         FROM instrument_master 
         WHERE segment = 'NSE_EQ' 
         AND is_active = 1 
-        AND (industry IS NULL OR industry = '')
+        AND (sector IS NULL OR sector = '' OR industry IS NULL)
         LIMIT ?
     """, (limit,))
     rows = cursor.fetchall()
     conn.close()
     return [row[0] for row in rows]
 
-def update_industry(symbol, industry):
+def update_record(symbol, sector, industry):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE instrument_master 
-        SET industry = ? 
+        SET sector = ?, industry = ? 
         WHERE trading_symbol = ? AND segment = 'NSE_EQ'
-    """, (industry, symbol))
+    """, (sector, industry, symbol))
     conn.commit()
     conn.close()
 
 def enrich_batch(limit):
-    symbols = fetch_missing_industry_symbols(limit)
+    symbols = fetch_missing_data_symbols(limit)
     if not symbols:
-        logger.info("No instruments found missing Industry data.")
+        logger.info("No instruments found missing Sector/Industry data.")
         return
 
-    logger.info(f"Targeting {len(symbols)} instruments for YFinance enrichment...")
+    logger.info(f"Targeting {len(symbols)} instruments for Sector/Industry enrichment...")
     
     success_count = 0
+    sectors_found = set()
     
     for i, symbol in enumerate(symbols):
         try:
@@ -79,18 +83,23 @@ def enrich_batch(limit):
             ticker = yf.Ticker(yf_ticker)
             
             # Fast info fetch
-            info = ticker.info
+            try:
+                info = ticker.info
+            except:
+                logger.warning(f"[{i+1}/{len(symbols)}] Failed to fetch info for {symbol}. Skipped.")
+                continue
             
             # Extract Sector/Industry
-            # 'sector' or 'industry' keys
-            industry = info.get('industry') or info.get('sector')
+            sector = info.get('sector')
+            industry = info.get('industry')
             
-            if industry:
-                update_industry(symbol, industry)
-                logger.info(f"[{i+1}/{len(symbols)}] {symbol} -> {industry}")
+            if sector or industry:
+                update_record(symbol, sector, industry)
+                logger.info(f"[{i+1}/{len(symbols)}] {symbol} -> Sector: {sector} | Industry: {industry}")
+                if sector: sectors_found.add(sector)
                 success_count += 1
             else:
-                logger.warning(f"[{i+1}/{len(symbols)}] {symbol}: No industry data found.")
+                logger.warning(f"[{i+1}/{len(symbols)}] {symbol}: No data found.")
                 
             # Respect rate limits
             time.sleep(0.5)
@@ -99,6 +108,9 @@ def enrich_batch(limit):
             logger.error(f"Failed {symbol}: {e}")
             
     logger.info(f"Enrichment Complete. Enriched {success_count}/{len(symbols)} stocks.")
+    logger.info(f"Unique Sectors discovered in this batch: {len(sectors_found)}")
+    if sectors_found:
+        logger.info(f"Sectors: {list(sectors_found)}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
