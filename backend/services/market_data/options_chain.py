@@ -64,7 +64,13 @@ class OptionsChainService:
 
     def get_fno_symbols(self) -> Dict[str, List[str]]:
         """
-        Get list of all FnO symbols (Indices and Stocks)
+        Get list of all FnO symbols (Indices and Stocks) by querying
+        the parent-child relationship: Find unique underlying_symbol 
+        from all CE/PE option contracts.
+        
+        This ensures we only return instruments that actually have 
+        active options, not just instruments in the FnO segment.
+        
         Returns: {'indices': [...], 'equities': [...]}
         """
         try:
@@ -72,11 +78,13 @@ class OptionsChainService:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            # Get distinct underlying symbols for NSE_FO
+            # Query for unique underlying symbols from actual option contracts (CE/PE)
+            # This is the definitive way to find optionable instruments
             cursor.execute("""
                 SELECT DISTINCT underlying_symbol, underlying_type 
                 FROM exchange_listings 
-                WHERE segment = 'NSE_FO' 
+                WHERE instrument_type IN ('CE', 'PE') 
+                  AND underlying_symbol IS NOT NULL
                 ORDER BY underlying_symbol
             """)
             

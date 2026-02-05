@@ -219,7 +219,7 @@ def start_background_updates():
             
             # Update options for subscribed symbols
             for room in rooms:
-                if room.startswith("options_"):
+                if room and room.startswith("options_"):
                     symbol = room.replace("options_", "")
                     # Fetch using OptionsChainService
                     option_chain = options_service.get_option_chain(symbol)
@@ -237,7 +237,7 @@ def start_background_updates():
 
             # Update quotes
             for room in rooms:
-                if room.startswith("quote_"):
+                if room and room.startswith("quote_"):
                     symbol = room.replace("quote_", "")
                     quote = upstox_api.get_market_quote(symbol)
 
