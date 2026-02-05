@@ -287,11 +287,11 @@ class OptionsChainService:
         """Convert symbol to Upstox instrument key"""
         # Index symbols
         if symbol.upper() == "NIFTY":
-            return "NSE_INDEX|Nifty%2050"
+            return "NSE_INDEX|Nifty 50"
         elif symbol.upper() == "BANKNIFTY":
-            return "NSE_INDEX|Nifty%20Bank"
+            return "NSE_INDEX|Nifty Bank"
         elif symbol.upper() == "FINNIFTY":
-            return "NSE_INDEX|Nifty%20Fin%20Services"
+            return "NSE_INDEX|Nifty Fin Services"
         else:
             # Stock options
             return f"NSE_EQ|{symbol.upper()}"
@@ -301,12 +301,13 @@ class OptionsChainService:
     ) -> Dict:
         """Process Upstox API response into standardized format"""
         # data structure based on v2 API documentation
-        if not resp_data:
+        if not data:
             return {}
 
-        # The v2 API returns a LIST of objects (one per strike/expiry combo? or one object with strikes?)
-        # Doc says Response Body: { status: success, data: [ { expiry, strike_price, call_options, put_options ... } ] }
-        # So it is a list of strikes.
+        # Extract the list of strikes from the 'data' key
+        options_list = data.get("data", [])
+        if not options_list or not isinstance(options_list, list):
+            return {}
 
         strikes_data = []
         underlying_price = 0
@@ -314,7 +315,7 @@ class OptionsChainService:
 
         # Sort by strike price
         try:
-            sorted_data = sorted(resp_data, key=lambda x: x.get("strike_price", 0))
+            sorted_data = sorted(options_list, key=lambda x: x.get("strike_price", 0))
 
             for item in sorted_data:
                 # Capture metadata from first item
@@ -366,7 +367,7 @@ class OptionsChainService:
 
         except Exception as e:
             logger.error(f"Error parsing response: {e}")
-            return self._mock_option_chain(symbol, None, market_open)
+            return {}
 
         result = {
             "symbol": symbol,
