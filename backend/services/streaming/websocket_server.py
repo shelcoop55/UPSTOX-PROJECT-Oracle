@@ -23,6 +23,7 @@ from flask_cors import CORS
 import logging
 
 from backend.services.upstox.live_api import get_upstox_api
+from backend.services.market_data.options_chain import OptionsChainService
 
 # Setup logger
 logging.basicConfig(
@@ -45,8 +46,10 @@ active_subscriptions: Dict[str, Set[str]] = {
     "positions": set(),
 }
 
-# Upstox API instance
+# Upstox API instance (for quotes/positions)
 upstox_api = get_upstox_api()
+# Options Service (for Option Chain)
+options_service = OptionsChainService()
 
 
 # Input validation functions
@@ -120,7 +123,7 @@ def handle_subscribe_options(data):
     active_subscriptions["options"].add(request.sid)
 
     # Send initial data
-    option_chain = upstox_api.get_option_chain(symbol, expiry_date)
+    option_chain = options_service.get_option_chain(symbol, expiry_date)
     if option_chain:
         emit(
             "options_update",
@@ -218,7 +221,8 @@ def start_background_updates():
             for room in rooms:
                 if room.startswith("options_"):
                     symbol = room.replace("options_", "")
-                    option_chain = upstox_api.get_option_chain(symbol)
+                    # Fetch using OptionsChainService
+                    option_chain = options_service.get_option_chain(symbol)
 
                     if option_chain:
                         socketio.emit(
