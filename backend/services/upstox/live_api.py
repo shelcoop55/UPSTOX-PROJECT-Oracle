@@ -330,7 +330,10 @@ class UpstoxLiveAPI:
 
         # 2. Look up in SQLite database
         try:
-            db_path = Path(__file__).parent.parent / "market_data.db"
+            # Fix: DB is in Project Root
+            root_dir = Path(__file__).resolve().parent.parent.parent.parent
+            db_path = root_dir / "market_data.db"
+            
             # Ensure we're not blocking on a long query
             conn = sqlite3.connect(db_path, timeout=1)
             cursor = conn.cursor()
@@ -339,13 +342,13 @@ class UpstoxLiveAPI:
             # The user might type "RELIANCE" or "RELIANCE-EQ"
             target = symbol.upper()
 
-            # Optimized Query: Check exact matches first
+            # Optimized Query: Check exact matches first in instrument_master
             cursor.execute(
                 """
                 SELECT instrument_key 
-                FROM exchange_listings 
-                WHERE symbol = ? 
-                   OR trading_symbol = ? 
+                FROM instrument_master 
+                WHERE trading_symbol = ? 
+                   OR name = ? 
                 LIMIT 1
             """,
                 (target, target),
@@ -356,12 +359,12 @@ class UpstoxLiveAPI:
                 conn.close()
                 return row[0]
 
-            # Fallback: Try "NSE_EQ" segment if not specified
+            # Fallback: Try fuzzy search or "NSE_EQ" segment if not specified
             cursor.execute(
                 """
                 SELECT instrument_key 
-                FROM exchange_listings 
-                WHERE symbol = ? AND instrument_type IN ('EQ', 'BE')
+                FROM instrument_master 
+                WHERE trading_symbol = ? AND segment = 'NSE_EQ'
                 LIMIT 1
             """,
                 (target,),

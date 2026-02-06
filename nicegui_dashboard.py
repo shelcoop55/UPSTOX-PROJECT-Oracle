@@ -84,6 +84,7 @@ from frontend.pages import (
     instruments_browser,
     market_explorer,
     corporate_announcements,
+    market_quote,
 )
 
 # Configuration
@@ -346,6 +347,7 @@ def main_dashboard(page: str = None):
                     menu_item("Charges Calc", "charges_calc", "calculate")
                     menu_item("Market Calendar", "market_calendar", "calendar_month")
                     menu_item("Market Guide", "market_guide", "library_books")
+                    menu_item("Market Quote", "market_quote", "filter_alt")
                     menu_item("Local Dev Guide", "local_guide", "code")
                     menu_item("Configurations", "settings", "settings")
 
@@ -448,6 +450,8 @@ def main_dashboard(page: str = None):
                 market_explorer.render_page(state)
             elif state.current_page == "corporate_announcements":
                 corporate_announcements.render_page(state)
+            elif state.current_page == "market_quote":
+                market_quote.render_page(state)
             else:
                 wip.render_page(state.current_page)
 
