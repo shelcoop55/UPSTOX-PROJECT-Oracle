@@ -1,15 +1,15 @@
 """
-NSE 500 Quote Poller (Table D)
-------------------------------
-Polls 5-minute Market Quote snapshots for NSE Mainboard Stocks (Nifty 500 proxy).
+MCX Quote Poller
+----------------
+Polls Market Quote snapshots for MCX instruments.
 Features:
-- Identifies Mainboard instruments (NSE EQ/BE).
+- Targets MCX_FO segment instruments.
 - Fetches full market depth (Top 5).
 - Batches API requests (50 instruments per call).
 - Flattens depth structure for SQL storage.
 
 Usage:
-    python backend/data/etl/nse500_quote_poller.py
+    python backend/data/etl/mcx_quote_poller.py
 """
 
 import asyncio
@@ -18,10 +18,8 @@ import sqlite3
 import logging
 import os
 import sys
-import random
 from typing import List, Dict, Any, Optional
 from datetime import datetime, time as dt_time
-from urllib.parse import quote
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
@@ -30,8 +28,8 @@ from backend.utils.auth.manager import AuthManager
 
 # Configuration
 DB_PATH = "market_data.db"
-LOG_FILE = "logs/nse500_poller.log"
-BATCH_SIZE = 50           # Upstox Quote API limit (safe value)
+LOG_FILE = "logs/mcx_poller.log"
+BATCH_SIZE = 50           # Upstox Quote API limit
 POLL_INTERVAL = 300       # 5 minutes
 
 # Logging Setup
@@ -44,63 +42,49 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger("NSE500Poller")
+logger = logging.getLogger("MCXPoller")
 
-class NSE500QuotePoller:
+class MCXQuotePoller:
     def __init__(self):
         self.auth_manager = AuthManager(db_path=DB_PATH)
         self.base_url = "https://api.upstox.com/v2/market-quote/quotes"
 
     def is_market_open(self) -> bool:
-        """Check if market is open (09:15 - 15:30 IST)"""
+        """
+        Check if MCX market is open (09:00 - 23:30/23:55 IST)
+        Since we want to fetch data, we'll use a broad range or FORCE_RUN.
+        """
         now = datetime.now()
-        if now.weekday() >= 5: return False
+        if now.weekday() >= 5: return False # Saturday/Sunday usually closed, but check specific rules
         
         current_time = now.time()
-        return dt_time(9, 15) <= current_time <= dt_time(15, 30)
+        # MCX: 09:00 to 23:30 (standard) or 23:55 (summer)
+        return dt_time(9, 0) <= current_time <= dt_time(23, 55)
 
-    def get_mainboard_instruments(self) -> List[str]:
-        """Fetch active NSE Mainboard instrument keys from DB."""
+    def get_mcx_instruments(self) -> List[str]:
+        """Fetch active MCX instruments from DB."""
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             
-            # NSE Mainboard = Segment 'NSE_EQ' AND Type in ('EQ', 'BE')
-            # Supersets Nifty 500 (~2410 NSE EQ + ~98 BE)
             query = """
                 SELECT instrument_key 
                 FROM instrument_master 
                 WHERE is_active = 1
-                AND segment = 'NSE_EQ'
-                AND instrument_type IN ('EQ', 'BE')
+                AND segment = 'MCX_FO'
+                LIMIT 100 -- Capping for initial tests/sanity
             """
             
             cursor.execute(query)
             rows = cursor.fetchall()
             keys = [r[0] for r in rows]
             
-            logger.info(f"Loaded {len(keys)} Mainboard instruments (Filter: NSE EQ/BE).")
+            logger.info(f"Loaded {len(keys)} MCX instruments.")
             conn.close()
             return keys
         except Exception as e:
-            logger.error(f"Failed to load Mainboard instruments: {e}")
+            logger.error(f"Failed to load MCX instruments: {e}")
             return []
-
-    def get_instrument_map(self) -> Dict[str, str]:
-        """Create a map of Trading Symbol -> Instrument Key (Canonical)"""
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            query = "SELECT trading_symbol, instrument_key FROM instrument_master WHERE segment='NSE_EQ' AND is_active=1"
-            cursor.execute(query)
-            # Map 'NSE_EQ:RELIANCE' -> 'NSE_EQ|INE002A01018'
-            # API returns 'NSE_EQ:SYMBOL', so we match on symbol
-            key_map = {f"NSE_EQ:{row[0]}": row[1] for row in cursor.fetchall()}
-            conn.close()
-            return key_map
-        except Exception as e:
-            logger.error(f"Failed to load key map: {e}")
-            return {}
 
     async def fetch_quotes_batch(self, session: aiohttp.ClientSession, keys: List[str], headers: Dict) -> Dict:
         try:
@@ -134,7 +118,7 @@ class NSE500QuotePoller:
                 target_dict[f'{prefix}_qty_{idx}'] = 0
                 target_dict[f'{prefix}_orders_{idx}'] = 0
 
-    def save_batch(self, quotes: Dict, key_map: Dict[str, str]):
+    def save_batch(self, quotes: Dict):
         if not quotes: return
 
         try:
@@ -144,18 +128,14 @@ class NSE500QuotePoller:
             timestamp = datetime.now().isoformat()
             data_to_insert = []
             
-            for api_key, data in quotes.items():
+            for key, data in quotes.items():
                 if not data: continue
-                
-                # NORMALIZE KEY: Convert API key (NSE_EQ:REL) to Canonical (NSE_EQ|INE...)
-                # If mapping fails, fallback to API key (though this shouldn't happen for valid stocks)
-                canonical_key = key_map.get(api_key, api_key)
                 
                 ohlc = data.get('ohlc', {})
                 depth = data.get('depth', {})
                 
                 row_dict = {
-                    'instrument_key': canonical_key,
+                    'instrument_key': key,
                     'timestamp': timestamp,
                     'open': ohlc.get('open'),
                     'high': ohlc.get('high'),
@@ -201,7 +181,7 @@ class NSE500QuotePoller:
                 values_list.append(tuple(row.get(c) for c in columns))
                 
             conn.executemany(f"""
-                INSERT OR IGNORE INTO market_quota_nse500_data 
+                INSERT OR IGNORE INTO market_quota_mcx_data 
                 ({col_str}) VALUES ({placeholders})
             """, values_list)
             
@@ -213,28 +193,32 @@ class NSE500QuotePoller:
 
     async def run_poll_cycle(self):
         token = self.auth_manager.get_valid_token()
-        if not token: return
+        if not token: 
+            logger.error("No valid token found. Poller aborted.")
+            return
         
         headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/json'}
-        all_keys = self.get_mainboard_instruments()
-        # Load Mapping dynamically each cycle (or cache it)
-        key_map = self.get_instrument_map()
+        all_keys = self.get_mcx_instruments()
         
+        if not all_keys:
+            logger.warning("No MCX instruments found to poll.")
+            return
+
         async with aiohttp.ClientSession() as session:
             for i in range(0, len(all_keys), BATCH_SIZE):
                 batch_keys = all_keys[i:i+BATCH_SIZE]
                 quotes = await self.fetch_quotes_batch(session, batch_keys, headers)
-                self.save_batch(quotes, key_map)
-                await asyncio.sleep(0.2)
+                self.save_batch(quotes)
+                await asyncio.sleep(0.5) # Gentle rate limiting
                 
-        logger.info(f"Polled {len(all_keys)} instruments.")
+        logger.info(f"Polled {len(all_keys)} MCX instruments.")
 
     async def start(self):
-        logger.info("NSE 500 Poller Started.")
+        logger.info("MCX Poller Started.")
         while True:
             if not self.is_market_open() and not os.getenv("FORCE_RUN"):
-                logger.info("Market Closed. Sleeping...")
-                await asyncio.sleep(300)
+                logger.info("Market Closed (MCX). Sleeping...")
+                await asyncio.sleep(600)
                 continue
                 
             start_ts = datetime.now()
@@ -242,16 +226,20 @@ class NSE500QuotePoller:
             
             elapsed = (datetime.now() - start_ts).total_seconds()
             sleep_time = max(0, POLL_INTERVAL - elapsed)
-            # logger.info(f"Sleeping {sleep_time:.1f}s") # User wanted silent efficiency? No, keep logs.
+            logger.info(f"Cycle Done. Sleeping {sleep_time:.1f}s")
             await asyncio.sleep(sleep_time)
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--once", action="store_true", help="Run one cycle")
+    parser.add_argument("--force", action="store_true", help="Force run even if market closed")
     args = parser.parse_args()
     
-    poller = NSE500QuotePoller()
+    if args.force:
+        os.environ["FORCE_RUN"] = "1"
+    
+    poller = MCXQuotePoller()
     try:
         if args.once:
             asyncio.run(poller.run_poll_cycle())
@@ -259,3 +247,5 @@ if __name__ == "__main__":
             asyncio.run(poller.start())
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        logger.exception(f"Unhandled Poller Error: {e}")

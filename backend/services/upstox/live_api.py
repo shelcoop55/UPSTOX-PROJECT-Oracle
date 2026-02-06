@@ -32,6 +32,7 @@ class UpstoxLiveAPI:
     def __init__(self):
         self.auth_manager = AuthManager()
         self.session = requests.Session()
+        self.BASE_URL = "https://api.upstox.com/v2"
 
     def _log_no_token(self, message: str, level: str = "warning"):
         if level == "error":
@@ -188,8 +189,16 @@ class UpstoxLiveAPI:
             )
 
             if response.status_code == 200:
-                data = response.json()
-                return data.get("data", {}).get(instrument_key)
+                data = response.json().get("data", {})
+                # Try exact match first
+                if instrument_key in data:
+                    return data[instrument_key]
+                # Fallback: Return the first available quote if dictionary is not empty
+                if data:
+                    first_key = next(iter(data))
+                    logger.info(f"Key mismatch: Input '{instrument_key}' vs Response '{first_key}'. Using response data.")
+                    return data[first_key]
+                return None
             else:
                 logger.error(f"Market quote fetch failed: {response.status_code}")
                 return None
@@ -343,15 +352,17 @@ class UpstoxLiveAPI:
             target = symbol.upper()
 
             # Optimized Query: Check exact matches first in instrument_master
+            # We add OR instrument_key = ? to handle cases where the user already has the key
             cursor.execute(
                 """
                 SELECT instrument_key 
                 FROM instrument_master 
                 WHERE trading_symbol = ? 
                    OR name = ? 
+                   OR instrument_key = ?
                 LIMIT 1
             """,
-                (target, target),
+                (target, target, symbol),
             )
 
             row = cursor.fetchone()

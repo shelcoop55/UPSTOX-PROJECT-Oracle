@@ -113,7 +113,7 @@ class FOQuotePoller:
             return {}
 
     def flatten_depth(self, depth_list: List[Dict], prefix: str, target_dict: Dict):
-        for i in range(5):
+        for i in range(15):
             idx = i + 1
             if i < len(depth_list):
                 item = depth_list[i]
@@ -165,9 +165,19 @@ class FOQuotePoller:
                 'bid_price_1', 'bid_qty_1', 'bid_orders_1', 'bid_price_2', 'bid_qty_2', 'bid_orders_2',
                 'bid_price_3', 'bid_qty_3', 'bid_orders_3', 'bid_price_4', 'bid_qty_4', 'bid_orders_4',
                 'bid_price_5', 'bid_qty_5', 'bid_orders_5',
+                'bid_price_6', 'bid_qty_6', 'bid_orders_6', 'bid_price_7', 'bid_qty_7', 'bid_orders_7',
+                'bid_price_8', 'bid_qty_8', 'bid_orders_8', 'bid_price_9', 'bid_qty_9', 'bid_orders_9',
+                'bid_price_10', 'bid_qty_10', 'bid_orders_10', 'bid_price_11', 'bid_qty_11', 'bid_orders_11',
+                'bid_price_12', 'bid_qty_12', 'bid_orders_12', 'bid_price_13', 'bid_qty_13', 'bid_orders_13',
+                'bid_price_14', 'bid_qty_14', 'bid_orders_14', 'bid_price_15', 'bid_qty_15', 'bid_orders_15',
                 'ask_price_1', 'ask_qty_1', 'ask_orders_1', 'ask_price_2', 'ask_qty_2', 'ask_orders_2',
                 'ask_price_3', 'ask_qty_3', 'ask_orders_3', 'ask_price_4', 'ask_qty_4', 'ask_orders_4',
-                'ask_price_5', 'ask_qty_5', 'ask_orders_5'
+                'ask_price_5', 'ask_qty_5', 'ask_orders_5',
+                'ask_price_6', 'ask_qty_6', 'ask_orders_6', 'ask_price_7', 'ask_qty_7', 'ask_orders_7',
+                'ask_price_8', 'ask_qty_8', 'ask_orders_8', 'ask_price_9', 'ask_qty_9', 'ask_orders_9',
+                'ask_price_10', 'ask_qty_10', 'ask_orders_10', 'ask_price_11', 'ask_qty_11', 'ask_orders_11',
+                'ask_price_12', 'ask_qty_12', 'ask_orders_12', 'ask_price_13', 'ask_qty_13', 'ask_orders_13',
+                'ask_price_14', 'ask_qty_14', 'ask_orders_14', 'ask_price_15', 'ask_qty_15', 'ask_orders_15'
             ]
             
             placeholders = ",".join(["?" for _ in columns])

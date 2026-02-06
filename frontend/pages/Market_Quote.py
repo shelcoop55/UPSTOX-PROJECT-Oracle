@@ -51,21 +51,58 @@ def get_screener_data(segment=None, sector=None, industry=None, index=None, sear
                 im.industry,
                 im.segment,
                 im.instrument_key,
-                q.close as last_price,
-                q.volume,
-                (q.close - q.open) as net_change,
-                q.open, q.high, q.low,
-                q.bid_price_1, q.bid_qty_1, q.ask_price_1, q.ask_qty_1,
-                q.bid_price_2, q.bid_qty_2, q.ask_price_2, q.ask_qty_2,
-                q.bid_price_3, q.bid_qty_3, q.ask_price_3, q.ask_qty_3,
-                q.bid_price_4, q.bid_qty_4, q.ask_price_4, q.ask_qty_4,
-                q.bid_price_5, q.bid_qty_5, q.ask_price_5, q.ask_qty_5
+                COALESCE(ws.ltp, q.close, 0) as last_price,
+                COALESCE(ws.volume, q.volume, 0) as volume,
+                COALESCE(ws.ltp - ws.open, q.close - q.open, 0) as net_change,
+                COALESCE(ws.open, q.open, 0) as open, 
+                COALESCE(ws.high, q.high, 0) as high, 
+                COALESCE(ws.low, q.low, 0) as low,
+                
+                -- Bids (1-15) - Prefer WebSocket
+                COALESCE(ws.bid_price_1, q.bid_price_1, 0) as bid_price_1, COALESCE(ws.bid_qty_1, q.bid_qty_1, 0) as bid_qty_1,
+                COALESCE(ws.bid_price_2, q.bid_price_2, 0) as bid_price_2, COALESCE(ws.bid_qty_2, q.bid_qty_2, 0) as bid_qty_2,
+                COALESCE(ws.bid_price_3, q.bid_price_3, 0) as bid_price_3, COALESCE(ws.bid_qty_3, q.bid_qty_3, 0) as bid_qty_3,
+                COALESCE(ws.bid_price_4, q.bid_price_4, 0) as bid_price_4, COALESCE(ws.bid_qty_4, q.bid_qty_4, 0) as bid_qty_4,
+                COALESCE(ws.bid_price_5, q.bid_price_5, 0) as bid_price_5, COALESCE(ws.bid_qty_5, q.bid_qty_5, 0) as bid_qty_5,
+                
+                -- Extended Bids (6-15) - Only from Websocket (or expanded quota table)
+                COALESCE(ws.bid_price_6, 0) as bid_price_6, COALESCE(ws.bid_qty_6, 0) as bid_qty_6,
+                COALESCE(ws.bid_price_7, 0) as bid_price_7, COALESCE(ws.bid_qty_7, 0) as bid_qty_7,
+                COALESCE(ws.bid_price_8, 0) as bid_price_8, COALESCE(ws.bid_qty_8, 0) as bid_qty_8,
+                COALESCE(ws.bid_price_9, 0) as bid_price_9, COALESCE(ws.bid_qty_9, 0) as bid_qty_9,
+                COALESCE(ws.bid_price_10, 0) as bid_price_10, COALESCE(ws.bid_qty_10, 0) as bid_qty_10,
+                COALESCE(ws.bid_price_11, 0) as bid_price_11, COALESCE(ws.bid_qty_11, 0) as bid_qty_11,
+                COALESCE(ws.bid_price_12, 0) as bid_price_12, COALESCE(ws.bid_qty_12, 0) as bid_qty_12,
+                COALESCE(ws.bid_price_13, 0) as bid_price_13, COALESCE(ws.bid_qty_13, 0) as bid_qty_13,
+                COALESCE(ws.bid_price_14, 0) as bid_price_14, COALESCE(ws.bid_qty_14, 0) as bid_qty_14,
+                COALESCE(ws.bid_price_15, 0) as bid_price_15, COALESCE(ws.bid_qty_15, 0) as bid_qty_15,
+
+                -- Asks (1-15)
+                COALESCE(ws.ask_price_1, q.ask_price_1, 0) as ask_price_1, COALESCE(ws.ask_qty_1, q.ask_qty_1, 0) as ask_qty_1,
+                COALESCE(ws.ask_price_2, q.ask_price_2, 0) as ask_price_2, COALESCE(ws.ask_qty_2, q.ask_qty_2, 0) as ask_qty_2,
+                COALESCE(ws.ask_price_3, q.ask_price_3, 0) as ask_price_3, COALESCE(ws.ask_qty_3, q.ask_qty_3, 0) as ask_qty_3,
+                COALESCE(ws.ask_price_4, q.ask_price_4, 0) as ask_price_4, COALESCE(ws.ask_qty_4, q.ask_qty_4, 0) as ask_qty_4,
+                COALESCE(ws.ask_price_5, q.ask_price_5, 0) as ask_price_5, COALESCE(ws.ask_qty_5, q.ask_qty_5, 0) as ask_qty_5,
+                
+                COALESCE(ws.ask_price_6, 0) as ask_price_6, COALESCE(ws.ask_qty_6, 0) as ask_qty_6,
+                COALESCE(ws.ask_price_7, 0) as ask_price_7, COALESCE(ws.ask_qty_7, 0) as ask_qty_7,
+                COALESCE(ws.ask_price_8, 0) as ask_price_8, COALESCE(ws.ask_qty_8, 0) as ask_qty_8,
+                COALESCE(ws.ask_price_9, 0) as ask_price_9, COALESCE(ws.ask_qty_9, 0) as ask_qty_9,
+                COALESCE(ws.ask_price_10, 0) as ask_price_10, COALESCE(ws.ask_qty_10, 0) as ask_qty_10,
+                COALESCE(ws.ask_price_11, 0) as ask_price_11, COALESCE(ws.ask_qty_11, 0) as ask_qty_11,
+                COALESCE(ws.ask_price_12, 0) as ask_price_12, COALESCE(ws.ask_qty_12, 0) as ask_qty_12,
+                COALESCE(ws.ask_price_13, 0) as ask_price_13, COALESCE(ws.ask_qty_13, 0) as ask_qty_13,
+                COALESCE(ws.ask_price_14, 0) as ask_price_14, COALESCE(ws.ask_qty_14, 0) as ask_qty_14,
+                COALESCE(ws.ask_price_15, 0) as ask_price_15, COALESCE(ws.ask_qty_15, 0) as ask_qty_15
+
             FROM instrument_master im
             LEFT JOIN market_quota_nse500_data q ON im.instrument_key = q.instrument_key
+            LEFT JOIN websocket_ticks_v3 ws ON im.instrument_key = ws.instrument_key
         """
         
         # Dynamic Join for Index
-        if index and index != "All":
+        # FIX: Do not join index_mapping if we are looking FOR indices (NSE_INDEX)
+        if index and index != "All" and segment != "NSE_INDEX":
             query += " JOIN index_mapping idx ON im.instrument_key = idx.instrument_key"
             
         query += " WHERE im.is_active = 1"
@@ -77,8 +114,14 @@ def get_screener_data(segment=None, sector=None, industry=None, index=None, sear
             
         # Index Filter
         if index and index != "All":
-            query += " AND idx.index_name = ?"
-            params.append(index)
+            if segment == "NSE_INDEX":
+                # If looking for indices, perhaps filter by name match if needed, 
+                # or just ignore the index filter because "Nifty 50" (Index) is not IN "Nifty 50" (Index)
+                # For now, let's ignore the index filter for NSE_INDEX to show all indices
+                pass
+            else:
+                query += " AND idx.index_name = ?"
+                params.append(index)
 
         if sector and sector != "All":
             query += " AND im.sector = ?"
@@ -98,6 +141,9 @@ def get_screener_data(segment=None, sector=None, industry=None, index=None, sear
         
         df = pd.read_sql_query(query, conn, params=params)
         conn.close()
+        
+        # FIX: Replace NaN with None to ensure valid JSON serialization
+        df = df.where(pd.notnull(df), None)
         
         # DEBUG: Print to terminal
         print(f"DEBUG: Fetched {len(df)} rows.")
@@ -202,7 +248,7 @@ def render_page(state):
                         ui.label("Qty")
                         ui.label("Price")
                     
-                    for i in range(1, 6):
+                    for i in range(1, 16):
                         price = row.get(f'bid_price_{i}', 0)
                         qty = row.get(f'bid_qty_{i}', 0)
                         if price:
@@ -217,7 +263,7 @@ def render_page(state):
                         ui.label("Price")
                         ui.label("Qty")
                         
-                    for i in range(1, 6):
+                    for i in range(1, 16):
                         price = row.get(f'ask_price_{i}', 0)
                         qty = row.get(f'ask_qty_{i}', 0)
                         if price:

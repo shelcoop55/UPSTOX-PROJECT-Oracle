@@ -43,6 +43,8 @@ from backend.utils.logging.error_handler import with_retry, UpstoxAPIError
 from backend.data.database.database_pool import get_db_pool
 from backend.utils.auth.mixins import AuthHeadersMixin
 import requests
+from upstox_client.feeder.proto import MarketDataFeedV3_pb2
+from google.protobuf import json_format
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +200,7 @@ class WebSocketV3Streamer(AuthHeadersMixin):
             wst.start()
 
             # Wait for connection
-            time.sleep(2)
+            time.sleep(5)
 
             return self.connected
 
@@ -220,20 +222,22 @@ class WebSocketV3Streamer(AuthHeadersMixin):
     def _on_message(self, ws, message):
         """Handle incoming websocket message"""
         try:
-            if isinstance(message, bytes):
-                # logger.debug(f"Received binary message: {len(message)} bytes")
-                self.total_messages_received += 1
-                self.last_message_time = datetime.now()
-                self._update_health_status()
-                return
-
-            data = json.loads(message)
-
             self.total_messages_received += 1
             self.last_message_time = datetime.now()
 
-            # Process market data
-            self._process_tick_data(data)
+            if isinstance(message, bytes):
+                # Decode protobuf
+                decoded_data = MarketDataFeedV3_pb2.FeedResponse()
+                decoded_data.ParseFromString(message)
+                data_dict = json_format.MessageToDict(decoded_data)
+                if not hasattr(self, '_msg_count'): self._msg_count = 0
+                if self._msg_count < 10:
+                    logger.info(f"DECODED MSG {self._msg_count}: {json.dumps(data_dict, indent=2)}")
+                    self._msg_count += 1
+                self._process_tick_data(data_dict)
+            else:
+                data = json.loads(message)
+                self._process_tick_data(data)
 
             # Update health status
             self._update_health_status()
@@ -310,7 +314,7 @@ class WebSocketV3Streamer(AuthHeadersMixin):
                 },
             }
 
-            self.ws.send(json.dumps(sub_message))
+            self.ws.send(json.dumps(sub_message).encode('utf-8'), opcode=websocket.ABNF.OPCODE_BINARY)
             self.subscribed_symbols.extend(instrument_keys)
 
             logger.info(f"✅ Subscribed to {len(instrument_keys)} instruments")
@@ -409,28 +413,39 @@ class WebSocketV3Streamer(AuthHeadersMixin):
     def _save_tick(self, instrument_key: str, tick: Dict[str, Any]):
         """Save tick to database"""
         try:
+            depth = tick.get("market_full", {}).get("market_level", {}).get("depth", {})
+            buy = depth.get("buy", [])
+            sell = depth.get("sell", [])
+
+            # Prepare columns and values
+            columns = ["instrument_key", "ltp", "volume", "oi", "high", "low", "open", "close"]
+            values = [
+                instrument_key,
+                tick.get("ltp"),
+                tick.get("volume"),
+                tick.get("oi"),
+                tick.get("high"),
+                tick.get("low"),
+                tick.get("open"),
+                tick.get("close"),
+            ]
+
+            # Add 15 levels of depth
+            for i in range(15):
+                idx = i + 1
+                b = buy[i] if i < len(buy) else {}
+                s = sell[i] if i < len(sell) else {}
+                
+                columns.extend([f"bid_price_{idx}", f"bid_qty_{idx}", f"ask_price_{idx}", f"ask_qty_{idx}"])
+                values.extend([b.get("price", 0), b.get("quantity", 0), s.get("price", 0), s.get("quantity", 0)])
+
+            placeholders = ", ".join(["?" for _ in values])
+            col_names = ", ".join(columns)
+
             with self.db_pool.get_connection() as conn:
                 conn.execute(
-                    """
-                    INSERT INTO websocket_ticks_v3 
-                    (instrument_key, ltp, volume, oi, bid_price, ask_price,
-                     bid_qty, ask_qty, high, low, open, close)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    (
-                        instrument_key,
-                        tick.get("ltp"),
-                        tick.get("volume"),
-                        tick.get("oi"),
-                        tick.get("bid_price"),
-                        tick.get("ask_price"),
-                        tick.get("bid_qty"),
-                        tick.get("ask_qty"),
-                        tick.get("high"),
-                        tick.get("low"),
-                        tick.get("open"),
-                        tick.get("close"),
-                    ),
+                    f"INSERT OR REPLACE INTO websocket_ticks_v3 ({col_names}) VALUES ({placeholders})",
+                    tuple(values)
                 )
 
         except Exception as e:
