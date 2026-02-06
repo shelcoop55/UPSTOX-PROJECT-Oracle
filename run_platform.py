@@ -58,7 +58,8 @@ class PlatformLauncher:
             "api": self.logs_dir / "api.pid",
             "oauth": self.logs_dir / "oauth.pid",
             "frontend": self.logs_dir / "frontend.pid",
-            "websocket": self.logs_dir / "websocket.pid"
+            "websocket": self.logs_dir / "websocket.pid",
+            "d30_streamer": self.logs_dir / "d30_streamer.pid"
         }
         
         # Monitoring state
@@ -68,7 +69,8 @@ class PlatformLauncher:
             "api": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None},
             "oauth": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None},
             "frontend": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None},
-            "websocket": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None}
+            "websocket": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None},
+            "d30_streamer": {"status": "stopped", "uptime": 0, "restarts": 0, "last_check": None}
         }
         self.start_times = {}
         
@@ -105,6 +107,13 @@ class PlatformLauncher:
                 "port": 5002,
                 "health_endpoint": None,  # Socket.IO doesn't have standard health endpoint
                 "log_file": self.logs_dir / "websocket_server.log"
+            },
+            "d30_streamer": {
+                "name": "Market Data D30",
+                "command": ["python", "backend/services/streaming/start_stream_d30.py"],
+                "port": 0,  # Background service (no port)
+                "health_endpoint": None,
+                "log_file": self.logs_dir / "market_feed_d30.log"
             }
         }
 

@@ -28,7 +28,7 @@ def get_active_mcx_keys() -> List[str]:
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT instrument_key, trading_symbol FROM instrument_master WHERE segment = 'MCX_FO' AND is_active = 1")
+        cursor.execute("SELECT instrument_key, trading_symbol FROM instrument_master WHERE segment = 'MCX_FO' AND is_active = 1 AND instrument_type = 'FUT'")
         rows = cursor.fetchall()
         conn.close()
         
@@ -51,26 +51,63 @@ def main():
         # Also add NIFTY/BANKNIFTY for good measure if available
         keys.extend(["NSE_INDEX|Nifty 50", "NSE_INDEX|Nifty Bank"])
         
-        if keys:
-            BATCH_SIZE = 50
-            logger.info(f"📡 Subscribing to {len(keys)} instruments in batches of {BATCH_SIZE}...")
-            
-            for i in range(0, len(keys), BATCH_SIZE):
-                batch = keys[i:i+BATCH_SIZE]
-                try:
-                    streamer.subscribe(batch, mode="full_d30")
-                    time.sleep(0.2) # Avoid rate limits
-                except Exception as e:
-                    logger.error(f"Failed to subscribe to batch {i}: {e}")
-            
-            logger.info("✅ All batches sent. Feed active. Press Ctrl+C to stop.")
+        # Initial Subscription (Futures + Nifty)
+        initial_keys = set(keys)
+        current_subscriptions = set()
+        
+        # Helper to sync subscriptions
+        def sync_subscriptions():
             try:
-                while True:
-                    status = streamer.get_health_status()
-                    logger.info(f"❤️ Health: {status}")
-                    time.sleep(10)
-            except KeyboardInterrupt:
-                logger.info("🛑 Stopping feed...")
+                # 1. Get Watched Keys from DB
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT instrument_key FROM watched_instruments")
+                watched = set(row[0] for row in cursor.fetchall())
+                conn.close()
+                
+                # 2. Add Fixed Keys (Futures)
+                target_set = initial_keys.union(watched)
+                
+                # 3. Calculate Diff
+                to_subscribe = list(target_set - current_subscriptions)
+                to_unsubscribe = list(current_subscriptions - target_set)
+                
+                # 4. Action
+                if to_subscribe:
+                    logger.info(f"➕ Adding {len(to_subscribe)} new keys...")
+                    # Batch subscribe if needed
+                    for i in range(0, len(to_subscribe), 50):
+                        batch = to_subscribe[i:i+50]
+                        streamer.subscribe(batch, mode="full_d30")
+                        time.sleep(0.1)
+                    current_subscriptions.update(to_subscribe)
+                    
+                if to_unsubscribe:
+                    logger.info(f"➖ Removing {len(to_unsubscribe)} keys...")
+                    streamer.unsubscribe(to_unsubscribe)
+                    current_subscriptions.difference_update(to_unsubscribe)
+                    
+            except Exception as e:
+                logger.error(f"Sync Error: {e}")
+
+        # Ensure initial sync happens immediately
+        sync_subscriptions()
+
+        logger.info("✅ Market Feed Active. Monitoring for dynamic subscriptions...")
+            
+        try:
+            while True:
+                status = streamer.get_health_status()
+                # Periodic Re-Sync every 3 seconds
+                sync_subscriptions()
+                
+                # Log health occasionally (every 30s roughly)
+                if int(time.time()) % 30 == 0:
+                     logger.info(f"❤️ Health: {status} | Subs: {len(current_subscriptions)}")
+                
+                time.sleep(3)
+        except KeyboardInterrupt:
+            logger.info("🛑 Stopping feed...")
         else:
             logger.warning("⚠️ No instruments to subscribe to!")
         

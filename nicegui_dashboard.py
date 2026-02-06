@@ -85,6 +85,7 @@ from frontend.pages import (
     market_explorer,
     corporate_announcements,
     market_quote,
+    mcx_live,
 )
 
 # Configuration
@@ -326,6 +327,7 @@ def main_dashboard(page: str = None):
                     menu_item("Backtest", "backtest", "science")
 
                     menu_group("Upstox Live")
+                    menu_item("MCX Pro", "mcx_live", "diamond")
                     menu_item("Live Data", "upstox_live", "cloud_sync")
                     menu_item("Analytics", "analytics", "analytics")
 
@@ -452,6 +454,8 @@ def main_dashboard(page: str = None):
                 corporate_announcements.render_page(state)
             elif state.current_page == "market_quote":
                 market_quote.render_page(state)
+            elif state.current_page == "mcx_live":
+                mcx_live.render_page(state)
             else:
                 wip.render_page(state.current_page)
 

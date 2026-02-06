@@ -413,31 +413,64 @@ class WebSocketV3Streamer(AuthHeadersMixin):
     def _save_tick(self, instrument_key: str, tick: Dict[str, Any]):
         """Save tick to database"""
         try:
-            depth = tick.get("market_full", {}).get("market_level", {}).get("depth", {})
-            buy = depth.get("buy", [])
-            sell = depth.get("sell", [])
+            # Handle V3 Structure: fullFeed -> marketFF
+            ff = tick.get("fullFeed", {}).get("marketFF", {})
+            if not ff:
+                # Try fallback or return if empty (snapshot might be different?)
+                return
+
+            # parsing LTPC
+            ltpc = ff.get("ltpc", {})
+            ltp = ltpc.get("ltp", 0)
+            
+            # Parsing OHLC (Use Daily '1d' or Intraday 'I1'?)
+            # Usually we want the Daily stats for High/Low/Open of the day
+            ohlc_data = ff.get("marketOHLC", {}).get("ohlc", [])
+            day_ohlc = {}
+            for candle in ohlc_data:
+                if candle.get("interval") == "1d":
+                    day_ohlc = candle
+                    break
+            
+            # Stats
+            volume = ff.get("vtt", 0) # Volume Traded Today
+            oi = ff.get("oi", 0)
+            
+            # Extract
+            open_px = day_ohlc.get("open", 0)
+            high_px = day_ohlc.get("high", 0)
+            low_px = day_ohlc.get("low", 0)
+            close_px = day_ohlc.get("close", 0) # Close from previous day or today? Usually close is prev close if day not end.
 
             # Prepare columns and values
             columns = ["instrument_key", "ltp", "volume", "oi", "high", "low", "open", "close"]
             values = [
                 instrument_key,
-                tick.get("ltp"),
-                tick.get("volume"),
-                tick.get("oi"),
-                tick.get("high"),
-                tick.get("low"),
-                tick.get("open"),
-                tick.get("close"),
+                ltp,
+                volume,
+                oi,
+                high_px,
+                low_px,
+                open_px,
+                close_px,
             ]
 
+            # Parsing Depth: marketLevel -> bidAskQuote (List of dicts)
+            depth_list = ff.get("marketLevel", {}).get("bidAskQuote", [])
+            
             # Add 15 levels of depth
             for i in range(15):
                 idx = i + 1
-                b = buy[i] if i < len(buy) else {}
-                s = sell[i] if i < len(sell) else {}
+                level = depth_list[i] if i < len(depth_list) else {}
+                
+                # Proto format: bidP, bidQ, askP, askQ
+                b_price = level.get("bidP", 0)
+                b_qty = int(level.get("bidQ", 0)) if level.get("bidQ") else 0
+                a_price = level.get("askP", 0)
+                a_qty = int(level.get("askQ", 0)) if level.get("askQ") else 0
                 
                 columns.extend([f"bid_price_{idx}", f"bid_qty_{idx}", f"ask_price_{idx}", f"ask_qty_{idx}"])
-                values.extend([b.get("price", 0), b.get("quantity", 0), s.get("price", 0), s.get("quantity", 0)])
+                values.extend([b_price, b_qty, a_price, a_qty])
 
             placeholders = ", ".join(["?" for _ in values])
             col_names = ", ".join(columns)

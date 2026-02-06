@@ -7,6 +7,7 @@ echo "🧹 Cleaning up old processes..."
 pkill -f nicegui_dashboard.py 2>/dev/null
 pkill -f api_server.py 2>/dev/null  
 pkill -f oauth_server.py 2>/dev/null
+pkill -f start_stream_d30.py 2>/dev/null
 
 # Wait for processes to die
 sleep 2
