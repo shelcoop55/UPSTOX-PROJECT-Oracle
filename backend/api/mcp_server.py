@@ -102,6 +102,71 @@ def get_quote(symbol: str) -> Dict:
         return {"status": "No Recent Data", "symbol": symbol}
 
 @mcp.tool()
+def get_option_chain(symbol: str, min_strike: Optional[float] = None, max_strike: Optional[float] = None) -> List[Dict]:
+    """
+    Get the Option Chain (Call/Put Price, OI, Greeks) for a symbol (e.g., 'NIFTY 50', 'RELIANCE').
+    Optionally filter by strike price range.
+    """
+    symbol = symbol.upper().strip()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 1. Resolve Instrument Key (Need Underlying Key)
+    # Try direct match first, then LIKE for indices
+    cursor.execute("SELECT instrument_key FROM instrument_master WHERE trading_symbol = ? OR name = ?", (symbol, symbol))
+    row = cursor.fetchone()
+    
+    underlying_key = None
+    if row:
+        underlying_key = row[0]
+    else:
+        # Try generic search for Indices (e.g. "NIFTY") -> "NSE_INDEX|Nifty 50"
+        cursor.execute("SELECT instrument_key FROM instrument_master WHERE name LIKE ? AND segment='NSE_INDEX' LIMIT 1", (f"%{symbol}%",))
+        row = cursor.fetchone()
+        if row: underlying_key = row[0]
+        
+    if not underlying_key:
+        conn.close()
+        return [{"error": f"Underlying symbol {symbol} not found."}]
+
+    # 2. Query Option Chain Table
+    query = """
+        SELECT strike_price, expiry_date, 
+               ce_ltp, ce_oi, ce_iv, 
+               pe_ltp, pe_oi, pe_iv 
+        FROM optionchain_intrday_schema 
+        WHERE underlying_key = ? 
+    """
+    params = [underlying_key]
+    
+    if min_strike:
+        query += " AND strike_price >= ?"
+        params.append(min_strike)
+    if max_strike:
+        query += " AND strike_price <= ?"
+        params.append(max_strike)
+        
+    query += " ORDER BY strike_price ASC"
+    
+    cursor.execute(query, tuple(params))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    if not rows:
+        return [{"status": "No Option Chain data found (Market might be closed or Poller inactive).", "symbol": symbol}]
+
+    # Format result
+    results = []
+    for r in rows:
+        results.append({
+            "strike": r[0],
+            "expiry": r[1],
+            "CE": {"LTP": r[2], "OI": r[3], "IV": r[4]},
+            "PE": {"LTP": r[5], "OI": r[6], "IV": r[7]}
+        })
+    return results
+
+@mcp.tool()
 def search_market(query: str) -> List[Dict]:
     """
     Fuzzy search for companies by Name or Symbol.

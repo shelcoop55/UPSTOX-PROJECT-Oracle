@@ -94,7 +94,18 @@ class OptionChainPoller:
             cursor = conn.cursor()
             # We want the underlying keys (NSE_INDEX|Nifty 50 or NSE_EQ|RELIANCE)
             # Assumption: keys in instrument_master are valid for option chain 'instrument_key' param
-            cursor.execute("SELECT trading_symbol, instrument_key FROM instrument_master WHERE segment IN ('NSE_EQ', 'NSE_INDEX') AND is_active=1")
+            cursor.execute("""
+                SELECT trading_symbol, instrument_key 
+                FROM instrument_master 
+                WHERE segment IN ('NSE_EQ', 'NSE_INDEX') AND is_active=1
+                ORDER BY 
+                    CASE 
+                        WHEN trading_symbol IN ('Nifty 50', 'Nifty Bank') THEN 0 
+                        WHEN segment='NSE_INDEX' THEN 1 
+                        ELSE 2 
+                    END, 
+                    trading_symbol
+            """)
             rows = cursor.fetchall()
             conn.close()
             # Filter specifically for F&O capable (simplified: take all active EQ/Indices)
