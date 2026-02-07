@@ -10,17 +10,25 @@ from backend.services.market_data.snapshot_service import SnapshotService
 
 DB_PATH = Path("market_data.db").absolute()
 
-def test_snapshot():
-    print("🚀 Testing Snapshot Service...")
+def refresh_all_major():
+    print("🚀 Manual Snapshot Refresh...")
     try:
         service = SnapshotService(str(DB_PATH))
-        # Use known valid params
-        res = service.fetch_option_snapshot("CRUDE OIL", "2026-02-17")
-        print(f"Result: {res}")
+        # Refresh for Crude Oil Near Future
+        import sqlite3
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, expiry FROM instrument_master WHERE name='CRUDE OIL' AND instrument_type='FUT' AND is_active=1 LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            res = service.fetch_option_snapshot(row[0], row[1])
+            print(f"✅ Success: {res}")
+        else:
+            print("❌ No active Crude Oil found to refresh.")
     except Exception as e:
         print(f"❌ Error: {e}")
-        import traceback
-        traceback.print_exc()
 
 if __name__ == "__main__":
-    test_snapshot()
+    refresh_all_major()

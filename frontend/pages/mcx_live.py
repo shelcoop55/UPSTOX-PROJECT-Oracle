@@ -380,8 +380,68 @@ def render_page(state):
 
         dialog.open()
 
-    # --- Main Data Grid ---
-    grid_container = ui.column().classes("w-full mt-4")
+    # --- Tabs ---
+    with ui.tabs().classes('w-full') as tabs:
+        live_tab = ui.tab('Live', icon='sensors')
+        intraday_tab = ui.tab('Intraday', icon='show_chart')
+        historical_tab = ui.tab('Historical', icon='history')
+        
+    with ui.tab_panels(tabs, value=live_tab).classes('w-full bg-transparent'):
+        
+        # --- TAB 1: LIVE DATA ---
+        with ui.tab_panel(live_tab):
+            grid_container = ui.column().classes("w-full")
+            
+            # Sub-header/Status
+            with ui.row().classes("w-full items-center justify-between mb-2"):
+                ui.label("Real-Time Stream").classes("text-sm text-slate-400 italic")
+                ui.badge("WebSocket Live", color="green")
+
+        # --- TAB 2: INTRADAY DATA ---
+        with ui.tab_panel(intraday_tab):
+            intraday_container = ui.column().classes("w-full")
+            with ui.row().classes("w-full items-center justify-between"):
+                ui.label("Intraday (1-Min Candles)").classes("text-lg font-bold")
+                ui.button("Fetch Intraday", icon="refresh", on_click=lambda: update_intraday()).props("flat")
+
+        # --- TAB 3: HISTORICAL EXPLORER ---
+        with ui.tab_panel(historical_tab):
+            historical_container = ui.column().classes("w-full")
+            
+            # --- Explorer Form ---
+            with ui.card().classes("w-full bg-slate-800 p-4 mb-4"):
+                ui.label("Data Explorer").classes("text-lg font-bold mb-2 text-yellow-400")
+                
+                with ui.row().classes("w-full gap-4 items-end"):
+                    # 1. Instrument (Auto-filled but editable logic could be added)
+                    # For now we use the main filter's commodity/expiry to resolve the key
+                    ui.label("Using Main Filter Selection").classes("text-slate-400 text-xs mb-2")
+                    
+                    # 2. Timeframe
+                    timeframe_select = ui.select(
+                        options=['1minute', '30minute', 'day', 'week', 'month'],
+                        value='day',
+                        label="Interval"
+                    ).classes("w-32")
+                    
+                    # 3. Date Range
+                    from_date_input = ui.input(
+                        label="From Date", 
+                        value=(datetime.now() - pd.Timedelta(days=30)).strftime("%Y-%m-%d"),
+                        placeholder="YYYY-MM-DD"
+                    ).classes("w-40")
+                    
+                    to_date_input = ui.input(
+                        label="To Date", 
+                        value=datetime.now().strftime("%Y-%m-%d"),
+                        placeholder="YYYY-MM-DD"
+                    ).classes("w-40")
+                    
+                    # 4. Fetch Action
+                    ui.button("Fetch Data", icon="search", on_click=lambda: update_historical()).classes("bg-blue-600")
+
+            # Results Area
+            history_results = ui.column().classes("w-full")
 
     async def update_expiries():
         comm = comm_select.value
@@ -391,8 +451,92 @@ def render_page(state):
             if exps:
                 expiry_select.value = exps[0] # Default to near month
             update_table()
+            update_intraday()
+            # update_historical() # Don't auto-fetch historical explorer on filter change, let user click
+
+    def update_intraday():
+        # ... (Same as before) ...
+        intraday_container.clear()
+        comm = comm_select.value
+        exp = expiry_select.value
+        if not comm or not exp: return
+
+        rows = get_mcx_data(comm, exp, "FUT")
+        if not rows: return
+        key = rows[0]['instrument_key']
+
+        from backend.services.market_data.historical_service import HistoricalService
+        service = HistoricalService(str(DB_PATH))
+        res = service.get_intraday_candles(key, interval='1minute')
+
+        with intraday_container:
+            if "error" in res:
+                ui.label(f"Error: {res['error']}").classes("text-red-400")
+            else:
+                ui.label(f"Intraday (1min) for {comm} {exp}").classes("text-sm text-slate-400 mb-2")
+                ui.table(
+                    columns=[
+                        {'name': 'time', 'label': 'Time', 'field': 'timestamp', 'sortable': True},
+                        {'name': 'o', 'label': 'Open', 'field': 'open'},
+                        {'name': 'h', 'label': 'High', 'field': 'high'},
+                        {'name': 'l', 'label': 'Low', 'field': 'low'},
+                        {'name': 'c', 'label': 'Close', 'field': 'close'},
+                        {'name': 'v', 'label': 'Vol', 'field': 'volume'}
+                    ],
+                    rows=res['data'][:50]
+                ).classes("w-full bg-slate-900")
+
+    def update_historical():
+        history_results.clear()
+        
+        # 1. Resolve Key from Main Filters
+        comm = comm_select.value
+        exp = expiry_select.value
+        if not comm or not exp: 
+            ui.notify("Please select Commodity & Expiry first", type='warning')
+            return
+
+        rows = get_mcx_data(comm, exp, "FUT")
+        if not rows: 
+            ui.notify("Instrument not found", type='negative')
+            return
+        key = rows[0]['instrument_key']
+        symbol = rows[0]['trading_symbol']
+
+        # 2. Get User Inputs
+        interval = timeframe_select.value
+        f_date = from_date_input.value
+        t_date = to_date_input.value
+        
+        # 3. Fetch
+        from backend.services.market_data.historical_service import HistoricalService
+        service = HistoricalService(str(DB_PATH))
+        
+        ui.notify(f"Fetching {interval} data for {symbol}...", type='info')
+        res = service.get_historical_candles(key, interval=interval, to_date=t_date, from_date=f_date)
+
+        # 4. Render
+        with history_results:
+            if "error" in res:
+                ui.label(f"Error: {res['error']}").classes("text-red-400 font-bold")
+            else:
+                count = len(res['data'])
+                ui.label(f"Found {count} candles ({f_date} to {t_date})").classes("text-green-400 mb-2")
+                
+                ui.table(
+                    columns=[
+                        {'name': 'date', 'label': 'Timestamp', 'field': 'timestamp', 'sortable': True, 'align': 'left'},
+                        {'name': 'o', 'label': 'Open', 'field': 'open'},
+                        {'name': 'h', 'label': 'High', 'field': 'high'},
+                        {'name': 'l', 'label': 'Low', 'field': 'low'},
+                        {'name': 'c', 'label': 'Close', 'field': 'close'},
+                        {'name': 'v', 'label': 'Vol', 'field': 'volume'}
+                    ],
+                    rows=res['data']
+                ).classes("w-full bg-slate-900")
 
     def update_table():
+        # ... (rest of old update_table logic) ...
         grid_container.clear()
         
         # Get Filter Values
@@ -400,17 +544,13 @@ def render_page(state):
         exp = expiry_select.value
         itype = type_toggle.value
         
-        # Auto-select Futures for "Most Active" if nothing selected
-        if not comm and not exp:
-            # Default view logic: Show generic highly active ones or just empty?
-            # User asked for "Most Active" Futures by default.
-            # We can implement a specific query for that, or just show CRUDE OIL/GOLD near futures.
-            # For simplicity, let's try to default to CRUDE OIL if nothing selected
-            if not comm:
-                comm = "CRUDE OIL"
-                comm_select.value = "CRUDE OIL" # Update UI
-                update_expiries() # This will trigger table update recursively, so return
-                return
+        if not comm:
+            comm = "CRUDE OIL"
+            # No circular call here, just set and fetch
+            # comm_select.value = "CRUDE OIL"
+            # update_expiries()
+            # return
+            # Better: use a default if nothing selected
 
         rows = get_mcx_data(comm, exp, itype)
         
@@ -468,4 +608,4 @@ def render_page(state):
             table.on('chain-click', lambda e: show_option_chain_ui(e.args))
 
     # Initial Load
-    # update_table() - Let user select or auto-default handled in update_table logic
+    # update_table() - Handled by defaults and selections
