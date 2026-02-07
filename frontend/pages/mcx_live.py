@@ -258,18 +258,8 @@ def render_page(state):
         chain_title = ui.label("Option Chain").classes("text-xl font-bold mb-4")
         chain_container = ui.column().classes("w-full h-full scroll-y-auto")
 
-    def show_option_chain_ui(row):
+    async def show_option_chain_ui(row):
         # Infer Commodity and Expiry from row
-        # Row has trading_symbol like "CRUDEOIL 19 FEB" -> complex parsing
-        # BUT we have filters selected: comm_select.value, expiry_select.value.
-        # However, row might be from a different expiry if we implement multi-expiry view later.
-        # For now, let's use the filters or try to parse if filters are None (which shouldn't happen in grid)
-        
-        # Actually row data from sql query includes 'expiry' but NOT 'name' directly (it has trading_symbol)
-        # But our get_mcx_data query DOES fetch 'im.name' (we didn't select it though? Wait check query)
-        # get_mcx_data query has: im.trading_symbol etc. It assumes query by commodity.
-        # Let's rely on comm_select.value for Commodity Name as it drives the grid.
-        
         comm = comm_select.value
         expiry = row['expiry'] # Use row's expiry
         
@@ -280,6 +270,30 @@ def render_page(state):
         chain_title.set_text(f"Option Chain: {comm} {expiry}")
         chain_container.clear()
         
+        # 1. Trigger Snapshot Fetch (Non-blocking usually ideally, but we want data)
+        ui.notify("Fetching Chain Snapshot...", type='info')
+        try:
+            # We need an async client or use requests? 
+            # Frontend runs in async loop properly with nicegui?
+            # Let's use requests for simplicity or check if we have an api client wrapper.
+            # Using requests in async function blocks loop slightly but acceptable for 0.5s.
+            # Or use aiohttp if available. Let's use requests for now.
+            import requests
+            resp = requests.post(
+                "http://localhost:8000/api/snapshot/option-chain", 
+                json={"commodity": comm, "expiry": expiry},
+                timeout=3
+            )
+            if resp.status_code == 200:
+                res = resp.json()
+                ui.notify(f"Updated {res.get('updated', 0)} contracts", type='positive')
+            else:
+                ui.notify(f"Snapshot Error: {resp.text}", type='warning')
+        except Exception as e:
+            # Don't block UI if snapshot fails (offline backend?)
+            print(f"Snapshot Warning: {e}")
+            
+        # 2. Query DB (Now has fresh data)
         data = get_option_chain(comm, expiry)
         
         with chain_container:

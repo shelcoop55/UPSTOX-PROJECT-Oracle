@@ -126,6 +126,33 @@ def index():
 
 
 # ============================================================================
+# MARKET SNAPSHOT ENDPOINTS
+# ============================================================================
+
+@app.post("/api/snapshot/option-chain")
+async def snapshot_option_chain():
+    """Trigger Snapshot Fetch for Option Chain"""
+    try:
+        body = request.json
+        commodity = body.get("commodity")
+        expiry = body.get("expiry")
+        
+        if not commodity or not expiry:
+            return jsonify({"error": "Missing commodity or expiry"}), 400
+            
+        from backend.services.market_data.snapshot_service import SnapshotService
+        # Use existing DB path from env or default
+        db_path = DB_PATH
+        service = SnapshotService(db_path)
+        
+        result = service.fetch_option_snapshot(commodity, expiry)
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Snapshot failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ============================================================================
 # PORTFOLIO ENDPOINTS
 # ============================================================================
 
