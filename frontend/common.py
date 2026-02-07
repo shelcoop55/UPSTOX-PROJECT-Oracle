@@ -52,7 +52,7 @@ class Components:
         """Standardized page header with gradient text"""
         with ui.row().classes("items-center gap-3 mb-6 animate-fade-in"):
             if icon:
-                ui.label(icon).classes("text-3xl text-indigo-400")
+                ui.icon(icon).classes("text-3xl text-indigo-400")
             with ui.column().classes("gap-0"):
                 ui.label(title).classes(
                     "text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-400"
