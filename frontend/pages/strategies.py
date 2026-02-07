@@ -20,7 +20,7 @@ def render_page(state):
     Components.section_header(
         "Strategy Builder",
         "Build advanced options strategies",
-        "settings_suggest",
+        "construction",
     )
 
     content_container = ui.column().classes("w-full mt-6 gap-6")

@@ -428,7 +428,7 @@ class OptionChainPage:
         with ui.row().classes("w-full justify-between items-center mb-6 pl-1"):
             with ui.column().classes("gap-0"):
                 Components.section_header(
-                    "Option Chain", "Premium Real-time Analytics", "hub"
+                    "Option Chain", "Premium Real-time Analytics", "list_alt"
                 )
             
             # Spot Price Display
